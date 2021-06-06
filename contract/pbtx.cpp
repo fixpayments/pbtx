@@ -20,14 +20,11 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
                               });
   }
   else {
-    std::set<name> recipients;
+    // nodeos make sure every recipient gets only one notification
     for(name rcpt: nwitr->listeners) {
-      recipients.insert(rcpt);
+      require_recipient(rcpt);
     }
     for(name rcpt: listeners) {
-      recipients.insert(rcpt);
-    }
-    for(name rcpt: recipients) {
       require_recipient(rcpt);
     }
     _networks.modify(*nwitr, admin_acc, [&]( auto& row ) {
@@ -35,7 +32,7 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
                                           });
   }
 }
-                        
+
 
 
 ACTION pbtx::unregnetwrok(uint64_t network_id)
@@ -51,20 +48,55 @@ ACTION pbtx::unregnetwrok(uint64_t network_id)
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
   }
-  
+
   _networks.erase(nwitr);
 }
 
 
-ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permisison)
+
+
+ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
 {
   networks _networks(_self, 0);
   auto nwitr = _networks.find(network_id);
   check(nwitr != _networks.end(), "Unknown network");
   require_auth(nwitr->admin_acc);
 
-  
+  pbtx_Permission perm;
+  pb_istream_t perm_stream = pb_istream_from_buffer(permission.data(), permission.size());
+  check(pb_decode(&perm_stream, pbtx_Permission_fields, &perm), perm_stream.errmsg);
+
+  check(perm.threshold > 0, "Threshold cannot be zero");
+  uint64_t weights_sum = 0;
+  for( uint32_t i = 0; i < perm.keys_count; i++ ) {
+    check(perm.keys[i].weight > 0, "Key weight cannot be zero in key #" + std::to_string(i));
+    check(perm.keys[i].key.type == pbtx_KeyType_EOSIO_KEY, "Unknown key type: " + std::to_string(perm.keys[i].key.type) +
+          " in key #" + std::to_string(i));
+    check(perm.keys[i].key.key_bytes.size >= 34, "Key #" + std::to_string(i) + " is too short");
+    weights_sum += perm.keys[i].weight;
+  }
+  check(weights_sum >= perm.threshold, "Threshold cannot be higher than sum of weights");
+
+  actors _actors(_self, network_id);
+  auto actitr = _actors.find(perm.actor);
+  if( actitr == _actors.end() ) {
+    _actors.emplace(nwitr->admin_acc, [&]( auto& row ) {
+        row.actor = perm.actor;
+        row.seqnum = 0;
+        row.permission = permission;
+      });
+  }
+  else {
+    _actors.modify(*actitr, nwitr->admin_acc, [&]( auto& row ) {
+        row.permission = permission;
+      });
+  }
+
+  for(name rcpt: nwitr->listeners) {
+    require_recipient(rcpt);
+  }
 }
+
 
 
 ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
@@ -81,37 +113,30 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
   }
-  
+
   _actors.erase(actitr);
 }
 
-
-
-uint8_t* trx_content_pointer = NULL;
-size_t trx_content_len = 0;
-
-bool pbtx_Transaction_decode_content(pb_istream_t *istream, const pb_field_t *field, void **arg)
-{
-  trx_content_len = istream->bytes_left;
-  trx_content_pointer = (uint8_t*) malloc(trx_content_len);
-  if (!pb_read(istream, trx_content_pointer, trx_content_len)) {
-    trx_content_len = 0;
-    return false;
-  }
-  return true;
-}
 
 
 
 ACTION pbtx::exectrx(vector<uint8_t> trx_input)
 {
   pbtx_Transaction trx;
-  trx.transaction_content.funcs.decode = pbtx_Transaction_decode_content;
-    
   pb_istream_t trx_stream = pb_istream_from_buffer(trx_input.data(), trx_input.size());
   check(pb_decode(&trx_stream, pbtx_Transaction_fields, &trx), trx_stream.errmsg);
 
-  check(trx_content_len > 0, "empty content");
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(trx.network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+
+  actors _actors(_self, trx.network_id);
+  auto actitr = _actors.find(trx.actor);
+  check(actitr != _actors.end(), "Unknown actor");
+
+  if( trx.seqnum != actitr->seqnum + 1 ) {
+    check(false, "Expected seqnum=" + std::to_string(actitr->seqnum + 1) +
+          ", received seqnum=" + std::to_string(trx.seqnum));
+  }
 
 }
-

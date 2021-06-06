@@ -1,0 +1,5 @@
+pbtx.Transaction.cosignors              max_count:15
+pbtx.Transaction.transaction_content    max_size:16384
+pbtx.Transaction.signatures             max_count:16
+pbtx.Permission.keys                    max_count:16
+pbtx.PublicKey.key_bytes                max_size:64

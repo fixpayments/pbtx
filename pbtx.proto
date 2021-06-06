@@ -11,7 +11,7 @@ message Transaction {
     // actor account ID
     fixed64 actor = 2;
 
-    // optional list of co-signing accounts
+    // optional list of co-signing accounts (maximum 15)
     repeated fixed64 cosignors = 3;
 
     // actor’s transaction sequence number
@@ -21,17 +21,19 @@ message Transaction {
     // typ[e and content, and passes them over for processing
     uint32 tansaction_type = 5;
 
-    // 	transaction content in protobuf format
+    // transaction content in protobuf format (max length 16384)
     bytes transaction_content = 6;
 
     // array of signatures. Each signature signs a hash of all the
     // above fields. The actor's signature should go first, followed
     // by cosignor signatures in exact order of cosignors field.
+    // (maximum 16)
     repeated Signature signatures = 7;
 }
 
 
-
+// Permission object allows specifying up to 16 public keys with their
+// weights to meet the threshold.
 message Permission {
     fixed64 actor = 1;
     uint32  threshold = 2;

@@ -15,11 +15,12 @@ CONTRACT pbtx : public eosio::contract {
   ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners);
 
   ACTION unregnetwrok(uint64_t network_id);
-  
-  ACTION regactor(uint64_t network_id, vector<uint8_t> permisison);
+
+  ACTION regactor(uint64_t network_id, vector<uint8_t> permission);
 
   ACTION unregactor(uint64_t network_id, uint64_t actor);
-                    
+
+  // execute the transaction
   ACTION exectrx(vector<uint8_t> trx_input);
 
  private:
@@ -34,7 +35,7 @@ CONTRACT pbtx : public eosio::contract {
 
   typedef eosio::multi_index<name("networks"), networks_row> networks;
 
-  
+
   // actors registry. Scope=network_id
   struct [[eosio::table("actors")]] actors_row {
     uint64_t           actor;
