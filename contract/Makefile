@@ -1,5 +1,5 @@
 CONTRACT=pbtx
-NANOPB=../../nanopb
+NANOPB=../nanopb
 PROTODIR=..
 
 all: $(CONTRACT).wasm

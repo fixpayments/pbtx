@@ -5,7 +5,7 @@
 using namespace eosio;
 using namespace std;
 
-CONTRACT ledger : public eosio::contract {
+CONTRACT pbtx : public eosio::contract {
  public:
 
   pbtx( name self, name code, datastream<const char*> ds ):

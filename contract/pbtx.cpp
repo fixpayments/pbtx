@@ -1,5 +1,4 @@
-#include "ledger.hpp"
-#include <eosio/transaction.hpp>
+#include "pbtx.hpp"
 #include <eosio/crypto.hpp>
 #include "pbtx.pb.h"
 #include <pb_decode.h>
@@ -57,7 +56,7 @@ ACTION pbtx::unregnetwrok(uint64_t network_id)
 }
 
 
-ACTION regactor(uint64_t network_id, vector<uint8_t> permisison)
+ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permisison)
 {
   networks _networks(_self, 0);
   auto nwitr = _networks.find(network_id);
@@ -68,12 +67,30 @@ ACTION regactor(uint64_t network_id, vector<uint8_t> permisison)
 }
 
 
+ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
+{
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+  require_auth(nwitr->admin_acc);
+
+  actors _actors(_self, network_id);
+  auto actitr = _actors.find(actor);
+  check(actitr != _actors.end(), "Unknown actor");
+
+  for(name rcpt: nwitr->listeners) {
+    require_recipient(rcpt);
+  }
+  
+  _actors.erase(actitr);
+}
+
 
 
 uint8_t* trx_content_pointer = NULL;
 size_t trx_content_len = 0;
 
-bool Transaction_decode_content(pb_istream_t *istream, const pb_field_t *field, void **arg)
+bool pbtx_Transaction_decode_content(pb_istream_t *istream, const pb_field_t *field, void **arg)
 {
   trx_content_len = istream->bytes_left;
   trx_content_pointer = (uint8_t*) malloc(trx_content_len);
@@ -86,24 +103,15 @@ bool Transaction_decode_content(pb_istream_t *istream, const pb_field_t *field, 
 
 
 
-ACTION pbtx::exec(vector<uint8_t> input)
+ACTION pbtx::exectrx(vector<uint8_t> trx_input)
 {
-  Transaction trx;
-  trx.content.funcs.decode = Transaction_decode_content;
+  pbtx_Transaction trx;
+  trx.transaction_content.funcs.decode = pbtx_Transaction_decode_content;
     
-  pb_istream_t trx_stream = pb_istream_from_buffer(input.data(), input.size());
-  check(pb_decode(&trx_stream, Transaction_fields, &trx), trx_stream.errmsg);
+  pb_istream_t trx_stream = pb_istream_from_buffer(trx_input.data(), trx_input.size());
+  check(pb_decode(&trx_stream, pbtx_Transaction_fields, &trx), trx_stream.errmsg);
 
   check(trx_content_len > 0, "empty content");
-  pb_istream_t content_stream = pb_istream_from_buffer(trx_content_pointer, trx_content_len);
 
-  switch(trx.trx_type) {
-  case 1:
-    {
-      Transfer xfer;
-      check(pb_decode(&content_stream, Transfer_fields, &xfer), content_stream.errmsg);
-      check(false, "Sender: " +  std::to_string(trx.requestor) + ", Recipient: " + std::to_string(xfer.recipient));
-    }
-  }
 }
 
