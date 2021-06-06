@@ -23,6 +23,13 @@ CONTRACT pbtx : public eosio::contract {
   // execute the transaction
   ACTION exectrx(vector<uint8_t> trx_input);
 
+  struct pbtxtransact_abi {
+    uint64_t           actor;
+    uint32_t           seqnum;
+    vector<uint64_t>   cosignors;
+    vector<uint8_t>    transaction_content;    
+  };
+
  private:
 
   // registry of networks and their admins

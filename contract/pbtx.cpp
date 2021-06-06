@@ -184,6 +184,10 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
           ", received seqnum=" + to_string(trx.seqnum));
   }
 
+  _actors.modify(*actitr, same_payer, [&]( auto& row ) {
+                                        row.seqnum++;
+                                      });
+  
   if( trx.signatures_count != trx.cosignors_count + 1 ) {
     check(false, "Expected " + to_string(trx.cosignors_count + 1) + " signatures, but received " +
           to_string(trx.signatures_count));
@@ -198,5 +202,16 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
       check(false, "Unknown cosignor #" + to_string(i) + ": " + to_string(trx.cosignors[i]));
     }
     validate_signature(digest, actitr->permission, trx.signatures[i+1]);
-  }    
+  }
+
+  
+  pbtxtransact_abi args =
+    {
+     trx.actor, trx.seqnum, {trx.cosignors, trx.cosignors + trx.cosignors_count},
+     {trx.transaction_content.bytes, trx.transaction_content.bytes + trx.transaction_content.size}
+    };
+  
+  for(name rcpt: nwitr->listeners) {
+    action {permission_level{_self, name("active")}, rcpt, name("pbtxtransact"), args}.send();
+  }
 }
