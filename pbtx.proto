@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+
+package pbtx;
+
+
+message Transaction {
+    // network identity
+    fixed64 network_id = 1;
+
+    // actor account ID
+    fixed64 actor = 2;
+
+    // optional list of co-signing accounts
+    repeated fixed64 cosignors = 3;
+
+    // actor’s transaction sequence number
+    uint32 seqnum = 4;
+
+    // network-specific transaction type. PBTX does not interpret the
+    // typ[e and content, and passes them over for processing
+    uint32 tansaction_type = 5;
+
+    // 	transaction content in protobuf format
+    bytes transaction_content = 6;
+
+    // array of signatures. Each signature signs a hash of all the
+    // above fields. The actor's signature should go first, followed
+    // by cosignor signatures in exact order of cosignors field.
+    repeated Signature signatures = 7;
+}
+
+
+
+message Permission {
+    fixed64 actor = 1;
+    uint32  threshold = 2;
+    repeated KeyWeight keys = 3;
+}
+
+
+enum KeyType {
+    EOSIO_KEY = 0;
+}
+
+
+message KeyWeight {
+    PublicKey key = 1;
+    uint32 weight = 2;
+}
+
+message PublicKey {
+    KeyType type = 1;
+    bytes key_bytes = 2;
+}
+
+
+message Signature {
+    KeyType type = 1;
+    bytes sig_bytes = 2;
+}
