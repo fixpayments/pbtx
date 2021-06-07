@@ -5,6 +5,8 @@
 using namespace eosio;
 using namespace std;
 
+
+
 CONTRACT pbtx : public eosio::contract {
  public:
 
@@ -12,7 +14,17 @@ CONTRACT pbtx : public eosio::contract {
     contract(self, code, ds)
     {}
 
-  ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners);
+  /*
+    Per-network flags. Upper 16 bits are free to use by listener
+    contracts for their internal needs. Lowe 16 bits are reserved for
+    PBTX own use.
+  */
+  const uint32_t PBTX_FLAGS_PBTX_RESERVED = 0x0000FFFF;
+  const uint32_t PBTX_FLAGS_PBTX_KNOWN = 0x00000001;
+  const uint32_t PBTX_FLAG_RAW_NOTIFY = 1<<0;
+
+
+  ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags);
 
   ACTION unregnetwrok(uint64_t network_id);
 
@@ -27,7 +39,7 @@ CONTRACT pbtx : public eosio::contract {
     uint64_t           actor;
     uint32_t           seqnum;
     vector<uint64_t>   cosignors;
-    vector<uint8_t>    transaction_content;    
+    vector<uint8_t>    transaction_content;
   };
 
  private:
@@ -37,6 +49,7 @@ CONTRACT pbtx : public eosio::contract {
     uint64_t           network_id;
     name               admin_acc;
     vector<name>       listeners;
+    uint32_t           flags;
     auto primary_key()const { return network_id; }
   };
 

@@ -5,9 +5,13 @@
 
 
 
-ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners)
+ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags)
 {
   require_auth(admin_acc);
+
+  check(((flags & PBTX_FLAGS_PBTX_RESERVED) & ~PBTX_FLAGS_PBTX_KNOWN) == 0,
+        "Unrecognized bits set in lower 16 bits of flags");
+
   networks _networks(_self, 0);
   auto nwitr = _networks.find(network_id);
   if( nwitr == _networks.end() ) {
@@ -17,10 +21,11 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
     _networks.emplace(admin_acc, [&]( auto& row ) {
                                 row.admin_acc = admin_acc;
                                 row.listeners = listeners;
+                                row.flags = flags;
                               });
   }
   else {
-    // nodeos make sure every recipient gets only one notification
+    // nodeos makes sure every recipient gets only one notification
     for(name rcpt: nwitr->listeners) {
       require_recipient(rcpt);
     }
@@ -29,6 +34,7 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
     }
     _networks.modify(*nwitr, admin_acc, [&]( auto& row ) {
                                             row.listeners = listeners;
+                                            row.flags = flags;
                                           });
   }
 }
@@ -126,7 +132,7 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
   check(pb_decode(&perm_stream, pbtx_Permission_fields, &perm), perm_stream.errmsg);
 
   uint32_t sum_weights = 0;
-  
+
   for( uint32_t i=0; i < sig.sig_bytes_count; i++ ) {
     public_key recovered_key;
     {
@@ -166,13 +172,13 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
   pb_istream_t trx_stream = pb_istream_from_buffer(trx_input.data(), trx_input.size());
   check(pb_decode(&trx_stream, pbtx_Transaction_fields, &trx), trx_stream.errmsg);
   check(trx.transaction_content.size > 0, "Empty transaction");
-  
+
   networks _networks(_self, 0);
   auto nwitr = _networks.find(trx.network_id);
   if( nwitr == _networks.end() ) {
     check(false, "Unknown network_id: " + to_string(trx.network_id));
   }
-  
+
   actors _actors(_self, trx.network_id);
   auto actitr = _actors.find(trx.actor);
   if( actitr == _actors.end() ) {
@@ -187,7 +193,7 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
   _actors.modify(*actitr, same_payer, [&]( auto& row ) {
                                         row.seqnum++;
                                       });
-  
+
   if( trx.signatures_count != trx.cosignors_count + 1 ) {
     check(false, "Expected " + to_string(trx.cosignors_count + 1) + " signatures, but received " +
           to_string(trx.signatures_count));
@@ -204,14 +210,21 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
     validate_signature(digest, actitr->permission, trx.signatures[i+1]);
   }
 
-  
-  pbtxtransact_abi args =
-    {
-     trx.actor, trx.seqnum, {trx.cosignors, trx.cosignors + trx.cosignors_count},
-     {trx.transaction_content.bytes, trx.transaction_content.bytes + trx.transaction_content.size}
-    };
-  
-  for(name rcpt: nwitr->listeners) {
-    action {permission_level{_self, name("active")}, rcpt, name("pbtxtransact"), args}.send();
+
+  if( nwitr->flags & PBTX_FLAG_RAW_NOTIFY ) {
+    for(name rcpt: nwitr->listeners) {
+      require_recipient(rcpt);
+    }
+  }
+  else {
+    pbtxtransact_abi args =
+      {
+       trx.actor, trx.seqnum, {trx.cosignors, trx.cosignors + trx.cosignors_count},
+       {trx.transaction_content.bytes, trx.transaction_content.bytes + trx.transaction_content.size}
+      };
+
+    for(name rcpt: nwitr->listeners) {
+      action {permission_level{_self, name("active")}, rcpt, name("pbtxtransact"), args}.send();
+    }
   }
 }
