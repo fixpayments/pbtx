@@ -60,6 +60,7 @@ CONTRACT pbtx : public eosio::contract {
   struct [[eosio::table("actors")]] actors_row {
     uint64_t           actor;
     uint32_t           seqnum;     // sequence number. Only transactions with seqnum+1 are accepted
+    time_point         last_modified;
     vector<uint8_t>    permission; // protobuf encoded Permission message
     auto primary_key()const { return actor; }
   };

@@ -1,5 +1,6 @@
 #include "pbtx.hpp"
 #include <eosio/crypto.hpp>
+#include <eosio/system.hpp>
 #include "pbtx.pb.h"
 #include <pb_decode.h>
 
@@ -192,6 +193,7 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
 
   _actors.modify(*actitr, same_payer, [&]( auto& row ) {
                                         row.seqnum++;
+                                        row.last_modified = current_time_point();
                                       });
 
   if( trx.signatures_count != trx.cosignors_count + 1 ) {
