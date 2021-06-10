@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package keyval;
+
+message Command {
+    uint32 key = 1;
+    oneof cmd {
+        SetEntry cmdset = 2;
+        DelEentry cmddel = 3;
+    }
+}
+
+
+message SetEntry {
+    string val = 1;
+}
+
+message DelEentry {
+}
+
+
