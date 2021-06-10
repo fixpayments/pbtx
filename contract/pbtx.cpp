@@ -176,8 +176,10 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
 
 
 
-ACTION pbtx::exectrx(vector<uint8_t> trx_input)
+ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
 {
+  require_auth(worker);
+
   pbtx_Transaction trx;
   pb_istream_t trx_stream = pb_istream_from_buffer(trx_input.data(), trx_input.size());
   check(pb_decode(&trx_stream, pbtx_Transaction_fields, &trx), trx_stream.errmsg);
@@ -234,7 +236,7 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
   else {
     pbtxtransact_abi args =
       {
-       trx.actor, trx.seqnum, {trx.cosignors, trx.cosignors + trx.cosignors_count},
+       worker, trx.actor, trx.seqnum, {trx.cosignors, trx.cosignors + trx.cosignors_count},
        {trx.transaction_content.bytes, trx.transaction_content.bytes + trx.transaction_content.size}
       };
 

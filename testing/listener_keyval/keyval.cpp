@@ -21,7 +21,8 @@ CONTRACT keyval : public eosio::contract {
     set_iprop(name("pbtxcontract"), pbtx_acc.value);
   }
 
-  ACTION pbtxtransact( uint64_t           actor,
+  ACTION pbtxtransact( name               worker,
+                       uint64_t           actor,
                        uint32_t           seqnum,
                        vector<uint64_t>   cosignors,
                        vector<uint8_t>    transaction_content )
@@ -29,6 +30,7 @@ CONTRACT keyval : public eosio::contract {
     name pbtxcontract(get_iprop(name("pbtxcontract")));
     check(pbtxcontract.value != 0, "pbtxcontract is not set");
     require_auth(pbtxcontract);
+    require_auth(worker);
 
     keyval_Command cmd;
     pb_istream_t cmd_stream = pb_istream_from_buffer(transaction_content.data(), transaction_content.size());
@@ -40,10 +42,10 @@ CONTRACT keyval : public eosio::contract {
       switch(cmd.which_cmd)
         {
         case keyval_Command_cmdset_tag:
-          kv.emplace(_self, [&]( auto& row ) {
-                              row.key = cmd.key;
-                              row.val = cmd.cmd.cmdset.val;
-                            });
+          kv.emplace(worker, [&]( auto& row ) {
+                               row.key = cmd.key;
+                               row.val = cmd.cmd.cmdset.val;
+                             });
           break;
 
         case keyval_Command_cmddel_tag:
@@ -57,9 +59,9 @@ CONTRACT keyval : public eosio::contract {
       switch(cmd.which_cmd)
         {
         case keyval_Command_cmdset_tag:
-          kv.modify(*kvitr, same_payer, [&]( auto& row ) {
-                                        row.val = cmd.cmd.cmdset.val;
-                                      });
+          kv.modify(*kvitr, worker, [&]( auto& row ) {
+                                      row.val = cmd.cmd.cmdset.val;
+                                    });
           break;
 
         case keyval_Command_cmddel_tag:
