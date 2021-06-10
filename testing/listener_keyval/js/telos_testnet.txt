@@ -1,0 +1,17 @@
+
+alias tTcleos='cleos -v -u https://testnet.persiantelos.com'
+PBTXDIR=${HOME}/build/pbtx
+
+tTcleos system newaccount --buy-ram-kbytes 900  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxtest1111 cc32dninexxx@active
+
+tTcleos set contract pbtxtest1111 ${PBTXDIR}/contract/ pbtx.wasm pbtx.abi
+
+tTcleos system newaccount --buy-ram-kbytes 900  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxkeyval11 cc32dninexxx@active
+
+tTcleos set contract pbtxkeyval11 ${PBTXDIR}/testing/listener_keyval keyval.wasm keyval.abi
+
+
+tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxworker11 cc32dninexxx@active EOS62nSgyk4aNYnN87ftVCik8nGWpnttQZNEbtgS3roRshDTVmMcB
+
+
+
