@@ -240,8 +240,11 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
        {trx.transaction_content.bytes, trx.transaction_content.bytes + trx.transaction_content.size}
       };
 
+    vector<permission_level> perms{permission_level{_self, name("active")},
+                                   permission_level{worker, name("active")}};
+
     for(name rcpt: nwitr->listeners) {
-      action {permission_level{_self, name("active")}, rcpt, name("pbtxtransact"), args}.send();
+      action {perms, rcpt, name("pbtxtransact"), args}.send();
     }
   }
 }
