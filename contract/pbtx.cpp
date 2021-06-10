@@ -42,7 +42,7 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
 
 
 
-ACTION pbtx::unregnetwrok(uint64_t network_id)
+ACTION pbtx::unregnetwork(uint64_t network_id)
 {
   networks _networks(_self, 0);
   auto nwitr = _networks.find(network_id);

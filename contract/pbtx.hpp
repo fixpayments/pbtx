@@ -26,7 +26,7 @@ CONTRACT pbtx : public eosio::contract {
 
   ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags);
 
-  ACTION unregnetwrok(uint64_t network_id);
+  ACTION unregnetwork(uint64_t network_id);
 
   ACTION regactor(uint64_t network_id, vector<uint8_t> permission);
 
