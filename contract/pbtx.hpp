@@ -57,13 +57,23 @@ CONTRACT pbtx : public eosio::contract {
 
 
   // actors registry. Scope=network_id
-  struct [[eosio::table("actors")]] actors_row {
+  struct [[eosio::table("actorperm")]] actorperm_row {
     uint64_t           actor;
-    uint32_t           seqnum;     // sequence number. Only transactions with seqnum+1 are accepted
-    time_point         last_modified;
     vector<uint8_t>    permission; // protobuf encoded Permission message
     auto primary_key()const { return actor; }
   };
 
-  typedef eosio::multi_index<name("actors"), actors_row> actors;
+  typedef eosio::multi_index<name("actorperm"), actorperm_row> actorperm;
+
+
+  // actor seqence number and last transaction timestamp
+  struct [[eosio::table("actorseq")]] actorseq_row {
+    uint64_t           actor;
+    uint32_t           seqnum;     // sequence number. Only transactions with seqnum+1 are accepted
+    time_point         last_modified;
+    auto primary_key()const { return actor; }
+  };
+
+  typedef eosio::multi_index<name("actorseq"), actorseq_row> actorseq;
+
 };

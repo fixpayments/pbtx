@@ -49,8 +49,8 @@ ACTION pbtx::unregnetwrok(uint64_t network_id)
   check(nwitr != _networks.end(), "Unknown network");
   require_auth(nwitr->admin_acc);
 
-  actors _actors(_self, network_id);
-  check(_actors.begin() == _actors.end(), "Cannot delete a network while it has actors");
+  actorperm _actorperm(_self, network_id);
+  check(_actorperm.begin() == _actorperm.end(), "Cannot delete a network while it has actors");
 
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
@@ -84,17 +84,22 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   }
   check(weights_sum >= perm.threshold, "Threshold cannot be higher than sum of weights");
 
-  actors _actors(_self, network_id);
-  auto actitr = _actors.find(perm.actor);
-  if( actitr == _actors.end() ) {
-    _actors.emplace(nwitr->admin_acc, [&]( auto& row ) {
+  actorperm _actorperm(_self, network_id);
+  auto actpermitr = _actorperm.find(perm.actor);
+  if( actpermitr == _actorperm.end() ) {
+    _actorperm.emplace(nwitr->admin_acc, [&]( auto& row ) {
+        row.actor = perm.actor;
+        row.permission = permission;
+      });
+
+    actorseq _actorseq(_self, network_id);
+    _actorseq.emplace(nwitr->admin_acc, [&]( auto& row ) {
         row.actor = perm.actor;
         row.seqnum = 0;
-        row.permission = permission;
       });
   }
   else {
-    _actors.modify(*actitr, nwitr->admin_acc, [&]( auto& row ) {
+    _actorperm.modify(*actpermitr, nwitr->admin_acc, [&]( auto& row ) {
         row.permission = permission;
       });
   }
@@ -113,15 +118,19 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
   check(nwitr != _networks.end(), "Unknown network");
   require_auth(nwitr->admin_acc);
 
-  actors _actors(_self, network_id);
-  auto actitr = _actors.find(actor);
-  check(actitr != _actors.end(), "Unknown actor");
+  actorperm _actorperm(_self, network_id);
+  auto actpermitr = _actorperm.find(actor);
+  check(actpermitr != _actorperm.end(), "Unknown actor");
+  _actorperm.erase(actpermitr);
+
+  actorseq _actorseq(_self, network_id);
+  auto actseqitr = _actorseq.find(actor);
+  check(actseqitr != _actorseq.end(), "Exception 1");
+  _actorseq.erase(actseqitr);
 
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
   }
-
-  _actors.erase(actitr);
 }
 
 
@@ -180,21 +189,25 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
     check(false, "Unknown network_id: " + to_string(trx.network_id));
   }
 
-  actors _actors(_self, trx.network_id);
-  auto actitr = _actors.find(trx.actor);
-  if( actitr == _actors.end() ) {
+  actorperm _actorperm(_self, trx.network_id);
+  auto actpermitr = _actorperm.find(trx.actor);
+  if( actpermitr == _actorperm.end() ) {
     check(false, "Unknown actor: " + to_string(trx.actor));
   }
 
-  if( trx.seqnum != actitr->seqnum + 1 ) {
-    check(false, "Expected seqnum=" + to_string(actitr->seqnum + 1) +
+  actorseq _actorseq(_self, trx.network_id);
+  auto actseqitr = _actorseq.find(trx.actor);
+  check(actseqitr != _actorseq.end(), "Exception 2");
+
+  if( trx.seqnum != actseqitr->seqnum + 1 ) {
+    check(false, "Expected seqnum=" + to_string(actseqitr->seqnum + 1) +
           ", received seqnum=" + to_string(trx.seqnum));
   }
 
-  _actors.modify(*actitr, same_payer, [&]( auto& row ) {
-                                        row.seqnum++;
-                                        row.last_modified = current_time_point();
-                                      });
+  _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
+                                             row.seqnum++;
+                                             row.last_modified = current_time_point();
+                                           });
 
   if( trx.signatures_count != trx.cosignors_count + 1 ) {
     check(false, "Expected " + to_string(trx.cosignors_count + 1) + " signatures, but received " +
@@ -203,13 +216,13 @@ ACTION pbtx::exectrx(vector<uint8_t> trx_input)
 
   checksum256 digest = sha256((const char*)trx.transaction_content.bytes, trx.transaction_content.size);
 
-  validate_signature(digest, actitr->permission, trx.signatures[0]);
+  validate_signature(digest, actpermitr->permission, trx.signatures[0]);
   for( uint32_t i = 0; i < trx.cosignors_count; i++ ) {
-    actitr = _actors.find(trx.cosignors[i]);
-    if( actitr == _actors.end() ) {
+    actpermitr = _actorperm.find(trx.cosignors[i]);
+    if( actpermitr == _actorperm.end() ) {
       check(false, "Unknown cosignor #" + to_string(i) + ": " + to_string(trx.cosignors[i]));
     }
-    validate_signature(digest, actitr->permission, trx.signatures[i+1]);
+    validate_signature(digest, actpermitr->permission, trx.signatures[i+1]);
   }
 
 
