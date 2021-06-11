@@ -1,3 +1,6 @@
+.vscode
+build
+
 *.wasm
 *.abi
 *.pb.*

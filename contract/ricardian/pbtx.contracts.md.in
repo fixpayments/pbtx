@@ -1,0 +1,54 @@
+<h1 class="contract">regnetwork</h1>
+
+---
+spec_version: "0.2.0"
+title: Register network
+summary: 'Register network'
+icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
+---
+
+Something
+
+<h1 class="contract">unregnetwrok</h1>
+
+---
+spec_version: "0.2.0"
+title: Unregister network
+summary: 'Unregister network'
+icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
+---
+
+Something
+
+<h1 class="contract">regactor</h1>
+
+---
+spec_version: "0.2.0"
+title: Register actor
+summary: 'Register actor'
+icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
+---
+
+Something
+
+<h1 class="contract">unregactor</h1>
+
+---
+spec_version: "0.2.0"
+title: Unregister actor
+summary: 'Unregister actor'
+icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
+---
+
+Something
+
+<h1 class="contract">exectrx</h1>
+
+---
+spec_version: "0.2.0"
+title: Execute transaction
+summary: 'Execute transaction'
+icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
+---
+
+Something
