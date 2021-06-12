@@ -9,7 +9,7 @@ icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 
 Something
 
-<h1 class="contract">unregnetwrok</h1>
+<h1 class="contract">unregnetwork</h1>
 
 ---
 spec_version: "0.2.0"

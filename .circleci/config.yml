@@ -1,0 +1,25 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: avm007/eosio.cdt:latest
+    steps:
+      - checkout
+      - run:
+          name: "Install dependencies"
+          command: |
+            apt install -y git python3-protobuf protobuf-compiler
+      - run:
+          name: "Update submodules recursive"
+          command: |
+            git submodule update --init --recursive
+      - run:
+          name: "Build contract and unit tests"
+          command: |
+            chmod u+x build.sh
+            ./build.sh -e /root/eosio/2.0 -c /usr/opt/eosio.cdt
+      - run:
+          name: "Run unit tests"
+          command: |
+            chmod u+x ./scripts/run_units.sh
+            ./scripts/run_units.sh 

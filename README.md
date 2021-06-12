@@ -36,5 +36,30 @@ actors, and validates arriving transactions. It sends notifications to
 network-specific listeners for further processing of the transaction
 content.
 
+# Dependencies
 
+* eosio 2.0^
+* eosio.cdt 1.6^
+* cmake 3.5^
+* nanopb
+* python3-protobuf
+* protobuf-compiler(protoc)
 
+# Compiling
+
+```
+./build.sh -e /root/eosio/2.0 -c /usr/opt/eosio.cdt
+```
+
+# Deploying
+
+```
+cleos set contract <your_account> ./build/Release/pbtx pbtx.wasm pbtx.abi
+```
+
+Ubuntu 18.04
+
+```
+ sudo apt install python3-protobuf
+ sudo apt install protobuf-compiler
+```
