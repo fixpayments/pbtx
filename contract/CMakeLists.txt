@@ -10,7 +10,10 @@ find_package(Nanopb REQUIRED)
 
 include_directories(${NANOPB_INCLUDE_DIRS})
 
-nanopb_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/../ pbtx.proto)
+NANOPB_GENERATE_CPP(PROTO_SRCS PROTO_HDRS RELPATH ./../ ./../pbtx.proto)
+
+message ("PROTO_SRCS = ${PROTO_SRCS}")
+message ("PROTO_HDRS = ${PROTO_HDRS}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
