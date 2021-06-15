@@ -43,7 +43,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # find all unit test suites
-file(GLOB EOSTARTER_UNIT_TESTS
+file(GLOB PBTX_UNIT_TESTS
 "*.cpp"
 "./pbtx/*.cpp"
 "./pbtx/suites/*.hpp"

@@ -26,6 +26,18 @@ if(BUILD_TESTS)
    message(STATUS "Building unit tests.")
 
    ExternalProject_Add(
+      listener_keyval
+      SOURCE_DIR ${CMAKE_SOURCE_DIR}/example/listener_keyval
+      BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/listener_keyval
+      CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake
+      UPDATE_COMMAND ""
+      PATCH_COMMAND ""
+      TEST_COMMAND ""
+      INSTALL_COMMAND ""
+      BUILD_ALWAYS 1
+   )
+
+   ExternalProject_Add(
      contracts_unit_tests
      LIST_SEPARATOR | # Use the alternate list separator
      CMAKE_ARGS -DCMAKE_BUILD_TYPE=${TEST_BUILD_TYPE} -DCMAKE_PREFIX_PATH=${TEST_PREFIX_PATH} -DCMAKE_FRAMEWORK_PATH=${TEST_FRAMEWORK_PATH} -DCMAKE_MODULE_PATH=${TEST_MODULE_PATH} -DEOSIO_ROOT=${EOSIO_ROOT} -DLLVM_DIR=${LLVM_DIR} -DBOOST_ROOT=${BOOST_ROOT}
