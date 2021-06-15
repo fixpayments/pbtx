@@ -23,28 +23,28 @@ pbtx_api::pbtx_api(name acnt, tester* tester)
 
 fc::variant pbtx_api::get_network(const uint64_t &network_id)
 {
-
+	return fc::variant();
 }
 
 fc::variant pbtx_api::get_actor_permission(const uint64_t &network_id, const uint64_t &actor)
 {
-
+	return fc::variant();
 }
 
 fc::variant pbtx_api::get_actor_sequence(const uint64_t &network_id, const uint64_t &actor)
 {
-
+	return fc::variant();
 }
 
 action_result pbtx_api::regnetwork(const account_name &signer, const uint64_t &network_id,
-                            const name &admin_acc, const vector<name> &listeners, const uint32_t &flags)
+								   const name &admin_acc, const vector<name> &listeners, const uint32_t &flags)
 {
-
+	return push_action(signer, contract, N(regnetwork), mvo()("network_id", network_id)("admin_acc", admin_acc)("listeners", listeners)("flags", flags));
 }
 
-action_result pbtx_api::unregnetwrok(const account_name &signer, const uint64_t &network_id)
+action_result pbtx_api::unregnetwork(const account_name &signer, const uint64_t &network_id)
 {
-    return push_action(signer, contract, N(exectrx), mvo()("trx_input", trx_input));
+    return push_action(signer, contract, N(unregnetwork), mvo()("network_id", network_id));
 }
 
 action_result pbtx_api::regactor(const account_name &signer, const uint64_t &network_id, const vector<uint8_t> &permission)

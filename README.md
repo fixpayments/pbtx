@@ -48,7 +48,7 @@ content.
 # Compiling
 
 ```
-./build.sh -e /root/eosio/2.0 -c /usr/opt/eosio.cdt
+./build.sh -e /root/eosio/2.0 -c /usr/opt/eosio.cdt -t
 ```
 
 # Deploying

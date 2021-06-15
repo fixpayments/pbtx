@@ -24,7 +24,7 @@ public:
 
     action_result regnetwork(const account_name &signer, const uint64_t &network_id,
                              const name &admin_acc, const vector<name> &listeners, const uint32_t &flags);
-    action_result unregnetwrok(const account_name &signer, const uint64_t &network_id);
+    action_result unregnetwork(const account_name &signer, const uint64_t &network_id);
     action_result regactor(const account_name &signer, const uint64_t &network_id, const vector<uint8_t> &permission);
     action_result unregactor(const account_name &signer, const uint64_t &network_id, const uint64_t &actor);
     action_result exectrx(const account_name &signer, const vector<uint8_t> &trx_input);
