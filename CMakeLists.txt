@@ -20,14 +20,14 @@ ExternalProject_Add(
    BUILD_ALWAYS 1
 )
 
-set(BUILD_TESTS FALSE CACHE BOOL "Build unit tests")
+set(BUILD_EXAMPLES FALSE CACHE BOOL "Build examples")
 
-if(BUILD_TESTS)
-   message(STATUS "Building unit tests.")
+if(BUILD_EXAMPLES)
+   message(STATUS "Building examples.")
 
    ExternalProject_Add(
       listener_keyval
-      SOURCE_DIR ${CMAKE_SOURCE_DIR}/example/listener_keyval
+      SOURCE_DIR ${CMAKE_SOURCE_DIR}/examples/listener_keyval
       BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/listener_keyval
       CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake
       UPDATE_COMMAND ""
@@ -36,6 +36,12 @@ if(BUILD_TESTS)
       INSTALL_COMMAND ""
       BUILD_ALWAYS 1
    )
+endif()
+
+set(BUILD_TESTS FALSE CACHE BOOL "Build unit tests")
+
+if(BUILD_TESTS)
+   message(STATUS "Building unit tests.")
 
    ExternalProject_Add(
      contracts_unit_tests

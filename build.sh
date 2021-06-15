@@ -7,6 +7,7 @@ function usage() {
   -c DIR      Directory where EOSIO.CDT is installed. (Default: /usr/local/eosio.cdt)
   -d          Debug build type.
   -t          Build unit tests.
+  -x          Build examples.
   -y          Noninteractive mode (Uses defaults for each prompt.)
   -h          Print this help menu.
    \\n" "$0" 1>&2
@@ -15,9 +16,10 @@ function usage() {
 
 CMAKE_BUILD_TYPE=Release
 BUILD_TESTS=false
+BUILD_EXAMPLES=false
 
 if [ $# -ne 0 ]; then
-  while getopts "e:c:dtyh" opt; do
+  while getopts "e:c:dtxyh" opt; do
     case "${opt}" in
       e )
         EOSIO_DIR_PROMPT=$OPTARG
@@ -30,6 +32,9 @@ if [ $# -ne 0 ]; then
       ;;
       t )
         BUILD_TESTS=true
+      ;;
+      x )
+        BUILD_EXAMPLES=true
       ;;
       y )
         NONINTERACTIVE=true
@@ -84,6 +89,6 @@ NC='\033[0m'
 CPU_CORES=$(getconf _NPROCESSORS_ONLN)
 mkdir -p build
 pushd build &> /dev/null
-cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_TESTS=${BUILD_TESTS} ../
+cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_TESTS=${BUILD_TESTS} -DBUILD_EXAMPLES=${BUILD_EXAMPLES} ../
 make -j $CPU_CORES
 popd &> /dev/null
