@@ -10,6 +10,7 @@ find_package(Nanopb REQUIRED)
 
 include_directories(${NANOPB_INCLUDE_DIRS})
 
+set(NANOPB_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/keyval.options)
 NANOPB_GENERATE_CPP(PROTO_SRCS PROTO_HDRS keyval.proto)
 
 message ("PROTO_SRCS = ${PROTO_SRCS}")
