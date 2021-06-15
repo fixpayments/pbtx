@@ -18,4 +18,7 @@ protected:
 
 public:
 	pbtx_tester();
+
+private:
+	void pbtx_init();
 };

@@ -23,17 +23,20 @@ pbtx_api::pbtx_api(name acnt, tester* tester)
 
 fc::variant pbtx_api::get_network(const uint64_t &network_id)
 {
-	return fc::variant();
+    vector<char> data = _tester->get_row_by_account(contract, account_name(0), N(networks), account_name(network_id));
+    return data.empty() ? fc::variant() : abi_ser.binary_to_variant("networks_row", data, base_tester::abi_serializer_max_time);
 }
 
 fc::variant pbtx_api::get_actor_permission(const uint64_t &network_id, const uint64_t &actor)
 {
-	return fc::variant();
+	vector<char> data = _tester->get_row_by_account(contract, account_name(network_id), N(actorperm), account_name(actor));
+    return data.empty() ? fc::variant() : abi_ser.binary_to_variant("actorperm_row", data, base_tester::abi_serializer_max_time);
 }
 
 fc::variant pbtx_api::get_actor_sequence(const uint64_t &network_id, const uint64_t &actor)
 {
-	return fc::variant();
+	vector<char> data = _tester->get_row_by_account(contract, account_name(network_id), N(actorseq), account_name(actor));
+    return data.empty() ? fc::variant() : abi_ser.binary_to_variant("actorseq_row", data, base_tester::abi_serializer_max_time);
 }
 
 action_result pbtx_api::regnetwork(const account_name &signer, const uint64_t &network_id,

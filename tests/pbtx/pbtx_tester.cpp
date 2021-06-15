@@ -11,3 +11,8 @@ pbtx_tester::pbtx_tester()
         N(carol)
     });
 }
+
+void pbtx_tester::pbtx_init()
+{
+    
+}
