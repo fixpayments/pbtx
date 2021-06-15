@@ -20,12 +20,17 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
       require_recipient(rcpt);
     }
     _networks.emplace(admin_acc, [&]( auto& row ) {
-                                row.admin_acc = admin_acc;
-                                row.listeners = listeners;
-                                row.flags = flags;
-                              });
+                                   row.network_id = network_id;
+                                   row.admin_acc = admin_acc;
+                                   row.listeners = listeners;
+                                   row.flags = flags;
+                                 });
   }
   else {
+    if( nwitr->admin_acc != admin_acc ) {
+      require_auth(nwitr->admin_acc);
+    }
+
     // nodeos makes sure every recipient gets only one notification
     for(name rcpt: nwitr->listeners) {
       require_recipient(rcpt);
@@ -34,9 +39,10 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
       require_recipient(rcpt);
     }
     _networks.modify(*nwitr, admin_acc, [&]( auto& row ) {
-                                            row.listeners = listeners;
-                                            row.flags = flags;
-                                          });
+                                          row.admin_acc = admin_acc;
+                                          row.listeners = listeners;
+                                          row.flags = flags;
+                                        });
   }
 }
 
