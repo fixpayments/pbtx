@@ -7,8 +7,8 @@ namespace eosio
     {
         struct contracts
         {
-            static std::vector<uint8_t> pbtx_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/../pbtx/pbtx.wasm"); }
-            static std::vector<char> pbtx_abi() { return read_abi("${CMAKE_BINARY_DIR}/../pbtx/pbtx.abi"); }
+            static std::vector<uint8_t> pbtx_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/../contract/pbtx.wasm"); }
+            static std::vector<char> pbtx_abi() { return read_abi("${CMAKE_BINARY_DIR}/../contract/pbtx.abi"); }
         };
     } // namespace testing
 } // namespace eosio
