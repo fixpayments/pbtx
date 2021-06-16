@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "eosjs": ">=22.0.0",
+        "elliptic": "6.5.4",
         "google-protobuf": ">=3.17.3"
     }
 }

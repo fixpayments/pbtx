@@ -1,8 +1,11 @@
 'use strict';
 
 const pbtx = require('./pbtx_pb');
+const EC = require('elliptic').ec;
 const { PublicKey, SerialBuffer } = require('eosjs');
 const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
+
+const defaultEc = new EC('secp256k1');
 
 class PBTX {
 
@@ -28,7 +31,7 @@ class PBTX {
         perm.setActor(data.actor);
         perm.setThreshold(data.threshold);
 
-        data.keys.forEach(keyweight => {
+        data.keys.forEach( keyweight => {
             if( !Number.isInteger(keyweight.weight) ) {
                 throw Error('key weight must be an integer');
             }
@@ -56,6 +59,35 @@ class PBTX {
         });
 
         return perm;
+    }
+
+    // gets TransactionBody object and array of private keys in string format
+    // returns Transaction object
+    signTransactionBody(body, privateKeys) {
+        const serializedBody = body.serializeBinary();
+        const digest = defaultEc.hash().update(serializedBody).digest();
+
+        let tx = new pbtx.pbtx.Transaction();
+        tx.setBody(serializedBody);
+
+        privateKeys.forEach( key => {
+            const priv = PrivateKey.fromString(key);
+            const privElliptic = priv.toElliptic();
+            const privateKey = PrivateKey.fromElliptic(privElliptic, priv.getType());
+            const signature = privateKey.sign(digest, false);
+            
+            let buffer = eosjs.SerialBuffer();
+            buffer.push(signature.type);
+            buffer.push(signature.data);
+
+            let sig = new pbtx.pbtx.Signature();
+            sig.setType(pbtx.pbtx.KeyType.EOSIO_KEY);
+            sig.addSigBytes(buffer);
+            
+            tx.addSignature(sig);
+        });
+                             
+        return tx;
     }
 }
 
