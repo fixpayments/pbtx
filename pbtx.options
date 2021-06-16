@@ -1,7 +1,8 @@
-pbtx.Transaction.cosignors              max_count:4
-pbtx.Transaction.transaction_content    max_size:16384
-pbtx.Transaction.signatures             max_count:16
-pbtx.Permission.keys                    max_count:16
-pbtx.PublicKey.key_bytes                max_size:64
-pbtx.Signature.sig_bytes                max_size:128
-pbtx.Signature.sig_bytes                max_count:16
+pbtx.TransactionBody.cosignors              max_count:4
+pbtx.TransactionBody.transaction_content    max_size:16384
+pbtx.Transaction.body                       max_size:65000
+pbtx.Transaction.signatures                 max_count:8
+pbtx.Permission.keys                        max_count:16
+pbtx.PublicKey.key_bytes                    max_size:64
+pbtx.Signature.sig_bytes                    max_size:128
+pbtx.Signature.sig_bytes                    max_count:16

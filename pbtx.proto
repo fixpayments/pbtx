@@ -4,7 +4,7 @@ syntax = "proto3";
 package pbtx;
 
 
-message Transaction {
+message TransactionBody {
     // network identity
     fixed64 network_id = 1;
 
@@ -23,12 +23,18 @@ message Transaction {
 
     // transaction content in protobuf format (max length 16384)
     bytes transaction_content = 6;
+}
 
-    // array of signatures. Each signature signs a hash of all the
-    // above fields. The actor's signature should go first, followed
-    // by cosignor signatures in exact order of cosignors field.
-    // (maximum 16)
-    repeated Signature signatures = 7;
+
+message Transaction {
+    // protobuf-encoded TransactionBody
+    bytes body = 1;
+
+    // array of signatures. Each signature signs a sha256 hash of the
+    // body bytes. The actor's signature should go first, followed by
+    // cosignor signatures in exact order of cosignors field.
+    // (maximum 8)
+    repeated Signature signatures = 2;
 }
 
 
