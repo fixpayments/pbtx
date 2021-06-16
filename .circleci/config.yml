@@ -23,3 +23,11 @@ jobs:
           command: |
             chmod u+x ./scripts/run_units.sh
             ./scripts/run_units.sh 
+      - store_artifacts:
+          path: /root/project/build/Release/contract/pbtx.wasm
+      - store_artifacts:
+          path: /root/project/build/Release/contract/pbtx.abi
+      - store_artifacts:
+          path: /root/project/build/Release/tests/pbtx_unit_test
+      - store_artifacts:
+          path: /root/project/build/Release/tests/Testing/Temporary/LastTest.log
