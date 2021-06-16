@@ -16,7 +16,7 @@ FC_LOG_AND_RETHROW()
 BOOST_FIXTURE_TEST_CASE(regnetwork_test, pbtx_tester)
 try
 {
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1002, N(bob), {},  0xFFFFFFFF));
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1002, N(bob), {},  0x00000001));
 
     auto network = m_pbtx_api.get_network(1002);
 
