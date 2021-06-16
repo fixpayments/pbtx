@@ -1,0 +1,17 @@
+{
+    "name": "pbtx",
+    "version": "0.0.1",
+    "description": "pbtx utilities",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "cc32d9 | EOS Amsterdam",
+        "url": "https://github.com/cc32d9"
+    },
+    "engines": {
+        "node": ">= 12.0.0"
+    },
+    "dependencies": {
+        "eosjs": ">=22.0.0",
+        "google-protobuf": ">=3.17.3"
+    }
+}
