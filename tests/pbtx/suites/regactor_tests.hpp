@@ -36,13 +36,13 @@ try
 {
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(alice), 1000, {}));
 
-    auto permission = m_pbtx_api.get_actor_permission(1000, N(alice));
+    auto permission = m_pbtx_api.get_actor_permission(1000, 100);
 
     REQUIRE_MATCHING_OBJECT(permission, mvo()
     ("actor", "")
     ("permission", ""));
 
-    auto sequence = m_pbtx_api.get_actor_sequence(1000, N(alice));
+    auto sequence = m_pbtx_api.get_actor_sequence(1000, 100);
 
     REQUIRE_MATCHING_OBJECT(sequence, mvo()
     ("actor", "")

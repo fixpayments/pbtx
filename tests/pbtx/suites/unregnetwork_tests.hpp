@@ -19,7 +19,7 @@ FC_LOG_AND_RETHROW()
 BOOST_FIXTURE_TEST_CASE(unregnetwork_test, pbtx_tester)
 try
 {
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.unregnetwork(N(bob), 1000);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.unregnetwork(N(bob), 1000));
 
     auto network = m_pbtx_api.get_network(1000);
     BOOST_REQUIRE_EQUAL(true, network.is_null());
