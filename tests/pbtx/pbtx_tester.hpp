@@ -1,6 +1,8 @@
 #pragma once
 #include "contracts.hpp"
 #include "pbtx_api.hpp"
+#include "pbtx.pb.h"
+#include <pb_encode.h>
 #include <boost/test/unit_test.hpp>
 #include <eosio/testing/tester.hpp>
 
@@ -21,4 +23,7 @@ public:
 
 private:
 	void pbtx_init();
+
+	std::vector<uint8_t> encode_permisson();
+	std::vector<uint8_t> encode_transaction();
 };

@@ -10,7 +10,10 @@ set(EOSIO_VERSION_MIN "1.8")
 set(EOSIO_VERSION_SOFT_MAX "2.0")
 #set(EOSIO_VERSION_HARD_MAX "")
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../nanopb/extra)
+
 find_package(eosio)
+find_package(Nanopb REQUIRED)
 
 ### Check the version of eosio
 set(VERSION_MATCH_ERROR_MSG "")
@@ -38,7 +41,9 @@ enable_testing()
 include_directories(
 pbtx
 pbtx/suites
+${NANOPB_INCLUDE_DIRS}
 ${CMAKE_BINARY_DIR}
+${CMAKE_BINARY_DIR}/../contract
 ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
