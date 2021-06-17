@@ -37,7 +37,7 @@ std::vector<uint8_t> pbtx_tester::encode_permisson()
     permisson.keys->has_key = true;
     permisson.keys->key.type = pbtx_KeyType_EOSIO_KEY;
     permisson.keys->key.key_bytes.size = alice_pub_key.size();
-    permisson.keys->key.key_bytes.bytes = alice_pub_key.c_str();
+    // permisson.keys->key.key_bytes.bytes = alice_pub_key.c_str();
     permisson.keys->weight = 1;
 
     auto max_size = 128;
