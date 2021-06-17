@@ -13,6 +13,7 @@ using namespace fc;
 using namespace std;
 
 using mvo = fc::mutable_variant_object;
+using key = std::vector<std::tuple<fc::crypto::public_key, pbtx_KeyType, uint32_t>>;
 
 class pbtx_tester : public tester {
 protected:
@@ -24,6 +25,10 @@ public:
 private:
 	void pbtx_init();
 
-	std::vector<uint8_t> encode_permisson();
+	std::vector<uint8_t> encode_permisson(const uint64_t &actor,
+										  const uint32_t &threshold,
+										  const pb_size_t &keys_count,
+										  const key &keys);
+
 	std::vector<uint8_t> encode_transaction();
 };

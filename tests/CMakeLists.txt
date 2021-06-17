@@ -52,6 +52,9 @@ file(GLOB PBTX_UNIT_TESTS
 "*.cpp"
 "./pbtx/*.cpp"
 "./pbtx/suites/*.hpp"
+"./../nanopb/pb_common.c"
+"./../nanopb/pb_encode.c"
+${CMAKE_BINARY_DIR}/../contract/pbtx.pb.c
 )
 
 add_eosio_test_executable(pbtx_unit_test ${PBTX_UNIT_TESTS}) # build unit tests as one executable
