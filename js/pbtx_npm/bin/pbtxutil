@@ -2,53 +2,94 @@
 
 'use strict';
 
-const pbtx = require('../pbtx_pb');
+const PBTX = require('../');
+const pbtx_pb = require('../pbtx_pb');
 const program  = require('commander');
 const fetch = require('node-fetch');
 
 
-                  
-program                         
+const { Api, JsonRpc, RpcError } = require('eosjs');
+const { KeosdSignatureProvider } = require('@proton/keosd-signature-provider');
+const { TextEncoder, TextDecoder } = require('util');
+
+
+program
     .requiredOption('--url [value]', 'EOSIO API URL')
     .requiredOption('--contract [value]', 'pbtx contract account name');
+
+program
+    .command('setperm <networkid> <jsdata>')
+    .requiredOption('--admin [value]', 'admin account name')
+    .description('Set an actor permission')
+    .action((networkid, jsdata, cmdopts) => {
+        const options = program.opts();
+
+        let perm = PBTX.makePermission(JSON.parse(jsdata));
+        const rpc = new JsonRpc(options.url, { fetch });
+        const api = new Api({ rpc: rpc, signatureProvider: new KeosdSignatureProvider(),
+                              textDecoder: new TextDecoder(), textEncoder: new TextEncoder()});
+
+        PBTX.setPermission(networkid, perm, api, options.contract, cmdopts.admin)
+            .then((res) => {
+                console.log('Transaction ID: ' + res.transaction_id);
+                process.exit(0);
+            })
+            .catch((err) => {
+                console.error(err);
+                process.exit(1);
+            });
+    });
+
 
 program
     .command('showperm <networkid> <actor>')
     .description('Show an actor permission')
     .action((networkid, actor) => {
         const options = program.opts();
-        fetch(options.url + '/v1/chain/get_table_rows', {
-            method: 'post',
-            body:    JSON.stringify(
-                {
-                    json: 'true',
-                    code: options.contract,
-                    scope: BigInt(networkid),
-                    table: 'actorperm',
-                    index_position: '1',
-                    key_type: 'i64',
-                    lower_bound: BigInt(actor),
-                    upper_bound: BigInt(actor),
-                    limit: 1
-                },
-                (key, value) => {typeof value === 'bigint' ? value.toString() : value}
-            ),
-            headers: { 'Content-Type': 'application/json' }
-        }).then(res => res.json())
-            .then(async (data) => {
-                if( !data.rows || data.rows.length != 1 ) {
-                    console.error("actor not found");
-                    process.exit(1);
-                }
-                else {
-                    let permbytes = Buffer.from(data.rows[0].permission, 'hex');
-                    let perm = new pbtx.pbtx.Permission();
-                    perm.deserializeBinary(permbytes);
-                    console.log(perm.toObject());
-                    process.exit(0);
-                }
-            });
-
+        let actorstr = BigInt(actor).toString();
+        try {
+            fetch(options.url + '/v1/chain/get_table_rows', {
+                method: 'post',
+                body:    JSON.stringify(
+                    {
+                        json: 'true',
+                        code: options.contract,
+                        scope: BigInt(networkid).toString(),
+                        table: 'actorperm',
+                        index_position: 1,
+                        key_type: 'i64',
+                        lower_bound: actorstr,
+                        upper_bound: actorstr,
+                        limit: 1
+                    }
+                ),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => {
+                    if( !res.ok ) {
+                        res.json().then(err => {throw Error(err)});
+                    }
+                    else {
+                        return res.json();
+                    }
+                })
+                .then(async (data) => {
+                    if( !data.rows || data.rows.length != 1 ) {
+                        console.error("actor not found");
+                        process.exit(1);
+                    }
+                    else {
+                        let permbytes = Buffer.from(data.rows[0].permission, 'hex');
+                        let ret = PBTX.permissionToObject(pbtx_pb.Permission.deserializeBinary(permbytes));
+                        console.log(JSON.stringify(ret, null, 2));
+                        process.exit(0);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+        catch(err) {
+            console.error(err);
+        }
     });
 
 program.parse(process.argv);

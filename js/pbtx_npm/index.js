@@ -1,17 +1,19 @@
 'use strict';
 
-const pbtx = require('./pbtx_pb');
+const pbtx_pb = require('./pbtx_pb');
 const EC = require('elliptic').ec;
-const { PublicKey, SerialBuffer } = require('eosjs');
+const { PublicKey } = require('eosjs');
 const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
+const { SerialBuffer } = require('eosjs/dist/eosjs-serialize');
 
 const defaultEc = new EC('secp256k1');
+
 
 class PBTX {
 
     // takes permission attributes
     // returns a Permission protobuf object
-    makePermission(data) {
+    static makePermission(data) {
         if( !Number.isInteger(data.actor) ) {
             throw Error('actor must be an integer');
         }
@@ -29,7 +31,7 @@ class PBTX {
         }
 
 
-        let perm = new pbtx.pbtx.Permission();
+        let perm = new pbtx_pb.Permission();
         perm.setActor(data.actor);
         perm.setThreshold(data.threshold);
 
@@ -46,14 +48,14 @@ class PBTX {
                 throw Error('key must be defined');
             }
 
-            let buffer = eosjs.SerialBuffer();
+            let buffer = new SerialBuffer();
             buffer.pushPublicKey(keyweight.key);
 
-            let pk = new pbtx.pbtx.PublicKey();
-            pk.setType(pbtx.pbtx.KeyType.EOSIO_KEY);
-            pk.setKeyBytes(buffer.array);
+            let pk = new pbtx_pb.PublicKey();
+            pk.setType(pbtx_pb.KeyType.EOSIO_KEY);
+            pk.setKeyBytes(buffer.asUint8Array());
 
-            let kw = new pbtx.pbtx.KeyWeight();
+            let kw = new pbtx_pb.KeyWeight();
             kw.setKey(pk);
             kw.setWeight(keyweight.weight);
 
@@ -63,12 +65,35 @@ class PBTX {
         return perm;
     }
 
-    
+
+    static permissionToObject(perm) {
+        let data = {
+            actor: perm.getActor(),
+            threshold: perm.getThreshold(),
+            keys: new Array()
+        };
+
+        perm.getKeysList().forEach(keyweight => {
+            let key = keyweight.getKey();
+            if( key.getType() != pbtx_pb.KeyType.EOSIO_KEY ) {
+                throw Error('unsupported key type: ' + key.getType());
+            }
+            let buffer = new SerialBuffer()
+            buffer.pushArray(key.getKeyBytes());
+
+            data.keys.push({weight: keyweight.getWeight(),
+                            key: buffer.getPublicKey()});
+        });
+
+        return data;
+    }
+
+
     // takes TransactionBody attributes
     // returns a Permission protobuf object
-    makeTransactionBody(data) {
-        let tb = new pbtx.pbtx.TransactionBody();
-        
+    static makeTransactionBody(data) {
+        let tb = new pbtx_pb.TransactionBody();
+
         if( data.network_id == null || typeof(data.network_id) !== 'bigint' ) {
             throw Error('network_id must be a BigInt');
         }
@@ -92,8 +117,8 @@ class PBTX {
                 }
                 tb.addCosignor(account);
             });
-        }                   
-        
+        }
+
         if( !Number.isInteger(data.seqnum) || data.seqnum < 1 ) {
             throw Error('seqnum must be a positive integer');
         }
@@ -114,14 +139,14 @@ class PBTX {
     }
 
 
-    
+
     // gets TransactionBody object and array of private keys in string format
     // returns Transaction object
-    signTransactionBody(body, privateKeys) {
+    static signTransactionBody(body, privateKeys) {
         const serializedBody = body.serializeBinary();
         const digest = defaultEc.hash().update(serializedBody).digest();
 
-        let tx = new pbtx.pbtx.Transaction();
+        let tx = new pbtx_pb.Transaction();
         tx.setBody(serializedBody);
 
         privateKeys.forEach( key => {
@@ -129,23 +154,48 @@ class PBTX {
             const privElliptic = priv.toElliptic();
             const privateKey = PrivateKey.fromElliptic(privElliptic, priv.getType());
             const signature = privateKey.sign(digest, false);
-            
+
             let buffer = eosjs.SerialBuffer();
             buffer.push(signature.type);
             buffer.push(signature.data);
 
-            let sig = new pbtx.pbtx.Signature();
-            sig.setType(pbtx.pbtx.KeyType.EOSIO_KEY);
-            sig.addSigBytes(buffer);
-            
+            let sig = new pbtx_pb.Signature();
+            sig.setType(pbtx_pb.KeyType.EOSIO_KEY);
+            sig.addSigBytes(buffer.asUint8Array());
+
             tx.addSignature(sig);
         });
-                             
+
         return tx;
     }
 
-    
-    async sendTransaction(tx, api, contract, worker) {
+
+    static async setPermission(network_id, perm, api, contract, admin) {
+        return api.transact(
+            {
+                actions:
+                [
+                    {
+                        account: contract,
+                        name: 'regactor',
+                        authorization: [{
+                            actor: admin,
+                            permission: 'active'} ],
+                        data: {
+                            network_id: network_id.toString(),
+                            permission: perm.serializeBinary()
+                        },
+                    }
+                ]
+            },
+            {
+                blocksBehind: 100,
+                expireSeconds: 3600
+            });
+    }
+
+
+    static async sendTransaction(tx, api, contract, worker) {
         return api.transact(
             {
                 actions:
@@ -166,11 +216,9 @@ class PBTX {
             {
                 blocksBehind: 100,
                 expireSeconds: 3600
-            }
-        );
+            });
     }
 }
-
 
 
 module.exports = PBTX;

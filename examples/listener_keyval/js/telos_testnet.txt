@@ -1,17 +1,45 @@
 
 alias tTcleos='cleos -v -u https://testnet.persiantelos.com'
-PBTXDIR=${HOME}/build/pbtx
 
-tTcleos system newaccount --buy-ram-kbytes 900  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxtest1111 cc32dninexxx@active
+tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxtest1111 cc32dninexxx@active
 
-tTcleos set contract pbtxtest1111 ${PBTXDIR}/contract/ pbtx.wasm pbtx.abi
+tTcleos set contract pbtxtest1111 build/Release/contract/ pbtx.wasm pbtx.abi
 
-tTcleos system newaccount --buy-ram-kbytes 900  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxkeyval11 cc32dninexxx@active
+tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxkeyval11 cc32dninexxx@active
 
-tTcleos set contract pbtxkeyval11 ${PBTXDIR}/testing/listener_keyval keyval.wasm keyval.abi
+tTcleos set contract pbtxkeyval11 build/Release/listener_keyval/ keyval.wasm keyval.abi
 
 
-tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxworker11 cc32dninexxx@active EOS62nSgyk4aNYnN87ftVCik8nGWpnttQZNEbtgS3roRshDTVmMcB
+
+
+
+tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxadmin111 cc32dninexxx@active EOS6ZFae47hRtcDPEeXQVo3eqmyBboEx7fZo5xznov1sogUYmNdeo
+
+tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxworker11 cc32dninexxx@active EOS6ZFae47hRtcDPEeXQVo3eqmyBboEx7fZo5xznov1sogUYmNdeo
+
+
+tTcleos push action pbtxtest1111 regnetwork '[1, "pbtxadmin111", [], 0'] -p pbtxadmin111
+
+
+cleos create key --to-console
+Private key: 5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+Public key: EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw
+
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 1 '{"actor":1, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 showperm 1 1
+{
+  "actor": 1,
+  "threshold": 1,
+  "keys": [
+    {
+      "weight": 1,
+      "key": "PUB_K1_8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPuK7gzd"
+    }
+  ]
+}
 
 
 
