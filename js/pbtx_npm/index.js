@@ -14,9 +14,7 @@ class PBTX {
     // takes permission attributes
     // returns a Permission protobuf object
     static makePermission(data) {
-        if( !Number.isInteger(data.actor) ) {
-            throw Error('actor must be an integer');
-        }
+        let actor = BigInt(data.actor);
 
         if( !Number.isInteger(data.threshold) ) {
             throw Error('threshold must be an integer');
@@ -32,7 +30,7 @@ class PBTX {
 
 
         let perm = new pbtx_pb.Permission();
-        perm.setActor(data.actor);
+        perm.setActor(actor.toString());
         perm.setThreshold(data.threshold);
 
         data.keys.forEach( keyweight => {

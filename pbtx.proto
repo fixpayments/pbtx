@@ -9,10 +9,10 @@ message TransactionBody {
     fixed64 network_id = 1;
 
     // actor account ID
-    fixed64 actor = 2;
+    fixed64 actor = 2 [jstype = JS_STRING];
 
     // optional list of co-signing accounts (maximum 4)
-    repeated fixed64 cosignors = 3;
+    repeated fixed64 cosignors = 3 [jstype = JS_STRING];
 
     // actor’s transaction sequence number
     uint32 seqnum = 4;
@@ -41,7 +41,7 @@ message Transaction {
 // Permission object allows specifying up to 16 public keys with their
 // weights to meet the threshold.
 message Permission {
-    fixed64 actor = 1;
+    fixed64 actor = 1 [jstype = JS_STRING];
     uint32  threshold = 2;
     repeated KeyWeight keys = 3;
 }

@@ -43,3 +43,13 @@ Public key: EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw
 
 
 
+#### try big 64-bit numbers
+
+tTcleos push action pbtxtest1111 regnetwork '["9223372036854775798", "pbtxadmin111", [], 0'] -p pbtxadmin111
+
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 "9223372036854775798" '{"actor":"9223372036854775777", "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 showperm 9223372036854775798 9223372036854775777
+
+
