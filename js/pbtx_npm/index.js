@@ -9,6 +9,8 @@ const defaultEc = new EC('secp256k1');
 
 class PBTX {
 
+    // takes permission attributes
+    // returns a Permission protobuf object
     makePermission(data) {
         if( !Number.isInteger(data.actor) ) {
             throw Error('actor must be an integer');
@@ -61,6 +63,58 @@ class PBTX {
         return perm;
     }
 
+    
+    // takes TransactionBody attributes
+    // returns a Permission protobuf object
+    makeTransactionBody(data) {
+        let tb = new pbtx.pbtx.TransactionBody();
+        
+        if( data.network_id == null || typeof(data.network_id) !== 'bigint' ) {
+            throw Error('network_id must be a BigInt');
+        }
+
+        tb.setNetworkId(data.network_id);
+
+        if( data.actor == null || typeof(data.actor) !== 'bigint' ) {
+            throw Error('actor must be a BigInt');
+        }
+
+        tb.setActor(data.actor);
+
+        if( data.cosignors ) {
+            if( !Array.isArray(data.cosignors) ) {
+                throw Error('cosignors must be an array');
+            }
+
+            data.cosignors.forEach( account => {
+                if( typeof(account) !== 'bigint' ) {
+                    throw Error('cosignors must be BigInt');
+                }
+                tb.addCosignor(account);
+            });
+        }                   
+        
+        if( !Number.isInteger(data.seqnum) || data.seqnum < 1 ) {
+            throw Error('seqnum must be a positive integer');
+        }
+
+        tb.setSeqnum(data.seqnum);
+
+        if( !Number.isInteger(data.tansaction_type) || data.tansaction_type < 0 ) {
+            throw Error('tansaction_type must be an unsigned integer');
+        }
+
+        tb.setTtransactionType(data.tansaction_type);
+
+        if( data.transaction_content ) {
+            tb.setTransactionContent(data.transaction_content);
+        }
+
+        return tb;
+    }
+
+
+    
     // gets TransactionBody object and array of private keys in string format
     // returns Transaction object
     signTransactionBody(body, privateKeys) {
@@ -88,6 +142,32 @@ class PBTX {
         });
                              
         return tx;
+    }
+
+    
+    async sendTransaction(tx, api, contract, worker) {
+        return api.transact(
+            {
+                actions:
+                [
+                    {
+                        account: contract,
+                        name: 'exectrx',
+                        authorization: [{
+                            actor: worker,
+                            permission: 'active'} ],
+                        data: {
+                            worker: worker,
+                            trx_input: tx.serializeBinary(),
+                        },
+                    }
+                ]
+            },
+            {
+                blocksBehind: 100,
+                expireSeconds: 3600
+            }
+        );
     }
 }
 

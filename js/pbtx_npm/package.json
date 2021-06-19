@@ -1,7 +1,7 @@
 {
     "name": "pbtx",
     "version": "0.0.1",
-    "description": "pbtx utilities",
+    "description": "pbtx protocol libraries and utilities",
     "license": "Apache-2.0",
     "author": {
         "name": "cc32d9 | EOS Amsterdam",
@@ -10,9 +10,18 @@
     "engines": {
         "node": ">= 12.0.0"
     },
+    "bin": {
+        "pbtxutil": "./bin/pbtxutil"
+    },
+    "main": "index.js",
+    "files": [
+        "README.md"
+    ],
     "dependencies": {
         "eosjs": ">=22.0.0",
         "elliptic": "6.5.4",
-        "google-protobuf": ">=3.17.3"
+        "google-protobuf": ">=3.17.3",
+        "commander": ">=2.19.0",
+        "node-fetch": ">= 2.6.0"
     }
 }

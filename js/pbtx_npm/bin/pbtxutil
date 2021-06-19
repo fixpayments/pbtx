@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const pbtx = require('../pbtx_pb');
+const program  = require('commander');
+const fetch = require('node-fetch');
+
+
+                  
+program                         
+    .requiredOption('--url [value]', 'EOSIO API URL')
+    .requiredOption('--contract [value]', 'pbtx contract account name');
+
+program
+    .command('showperm <networkid> <actor>')
+    .description('Show an actor permission')
+    .action((networkid, actor) => {
+        const options = program.opts();
+        fetch(options.url + '/v1/chain/get_table_rows', {
+            method: 'post',
+            body:    JSON.stringify(
+                {
+                    json: 'true',
+                    code: options.contract,
+                    scope: BigInt(networkid),
+                    table: 'actorperm',
+                    index_position: '1',
+                    key_type: 'i64',
+                    lower_bound: BigInt(actor),
+                    upper_bound: BigInt(actor),
+                    limit: 1
+                },
+                (key, value) => {typeof value === 'bigint' ? value.toString() : value}
+            ),
+            headers: { 'Content-Type': 'application/json' }
+        }).then(res => res.json())
+            .then(async (data) => {
+                if( !data.rows || data.rows.length != 1 ) {
+                    console.error("actor not found");
+                    process.exit(1);
+                }
+                else {
+                    let permbytes = Buffer.from(data.rows[0].permission, 'hex');
+                    let perm = new pbtx.pbtx.Permission();
+                    perm.deserializeBinary(permbytes);
+                    console.log(perm.toObject());
+                    process.exit(0);
+                }
+            });
+
+    });
+
+program.parse(process.argv);
+
+
+
+
+
+
+/*
+ Local Variables:
+ mode: javascript
+ indent-tabs-mode: nil
+ End:
+*/
