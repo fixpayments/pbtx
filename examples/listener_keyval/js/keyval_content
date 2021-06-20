@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const program   = require('commander');
+
+const keyval_pb = require('./pb/keyval_pb');
+
+program
+    .command('set <key> <val>')
+    .description('Set key/value pair')
+    .action((key, value) => {
+        let cmd = new keyval_pb.Command();
+        cmd.setKey(key);
+
+        let setentry = new keyval_pb.SetEntry();
+        setentry.setVal(value);
+        cmd.setCmdset(setentry);
+
+        console.log(Buffer.from(cmd.serializeBinary()).toString('hex'));
+    });
+
+
+program
+    .command('del <key>')
+    .description('Delete key/value pair')
+    .action((key) => {
+        let cmd = new keyval_pb.Command();
+        cmd.setKey(key);
+
+        let delentry = new keyval_pb.DelEntry();
+        cmd.setCmddel(delentry);
+
+        console.log(Buffer.from(cmd.serializeBinary()).toString('hex'));
+    });
+
+program.parse(process.argv);
+
+
+
+
+
+
+
+/*
+ Local Variables:
+ mode: javascript
+ indent-tabs-mode: nil
+ End:
+*/

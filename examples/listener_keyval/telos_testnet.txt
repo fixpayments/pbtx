@@ -75,4 +75,11 @@ tTcleos push action pbtxtest1111 regnetwork '[10, "pbtxadmin111", ["pbtxkeyval11
 
 ./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 10 '{"actor":55, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 trx 10 --worker=pbtxworker11 --actor=55 --seqnum=1 --type=99 --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+./examples/listener_keyval/js/keyval_content set 19 blahblah 
+0813120a0a08626c6168626c6168
+
+./examples/listener_keyval/js/keyval_content del 19
+08131a00
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 trx 10 --worker=pbtxworker11 --actor=55 --seqnum=1 --type=0 --content=0813120a0a08626c6168626c6168  --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+

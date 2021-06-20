@@ -110,7 +110,7 @@ program
             transaction_type: Number.parseInt(cmdopts.type)
         };
         if( cmdopts.content ) {
-            bodydata.transaction_content = cmdopts.content;
+            bodydata.transaction_content = Buffer.from(cmdopts.content, 'hex');
         }
 
         const body = PBTX.makeTransactionBody(bodydata);
