@@ -181,7 +181,7 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
   if( sum_weights < perm->threshold ) {
     check(false, "Insufficient signatures weight for actor #" + to_string(perm->actor));
   }
-  
+
   free(perm);
 }
 
@@ -199,7 +199,7 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
   pbtx_TransactionBody* body = (pbtx_TransactionBody*) malloc(sizeof(pbtx_TransactionBody));
   pb_istream_t body_stream = pb_istream_from_buffer(trx->body.bytes, trx->body.size);
   check(pb_decode(&body_stream, pbtx_TransactionBody_fields, body), body_stream.errmsg);
-  
+
   networks _networks(_self, 0);
   auto nwitr = _networks.find(body->network_id);
   if( nwitr == _networks.end() ) {
@@ -231,7 +231,7 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
           to_string(trx->signatures_count));
   }
 
-  checksum256 digest = sha256((const char*)body->transaction_content.bytes, body->transaction_content.size);
+  checksum256 digest = sha256((const char*)trx->body.bytes, trx->body.size);
 
   validate_signature(digest, actpermitr->permission, trx->signatures[0]);
   for( uint32_t i = 0; i < body->cosignors_count; i++ ) {
