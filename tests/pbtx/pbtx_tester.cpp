@@ -27,11 +27,6 @@ void pbtx_tester::pbtx_init()
     // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson));
 }
 
-template <typename T>
-const T& as_type(const T& x) {
-   return x;
-}
-
 std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
                                                    const uint32_t &threshold,
                                                    const pb_size_t &keys_count,
@@ -53,8 +48,8 @@ std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
 
         std::array<char, 33> buffer;
         datastream ds(&buffer, sizeof(buffer));
-        fc::raw::pack(ds, as_type<eosio::chain::public_key_type>(key));
-        memcpy(permisson.keys[i].key.key_bytes.bytes, &ds, 33);
+        fc::raw::pack(ds, key);
+        memcpy(permisson.keys[i].key.key_bytes.bytes, ds.pos(), ds.remaining());
         permisson.keys[i].weight = weight;
         i++;
     }
