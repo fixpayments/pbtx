@@ -252,6 +252,7 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
     pbtxtransact_abi args =
       {
        worker, body->actor, body->seqnum, {body->cosignors, body->cosignors + body->cosignors_count},
+       body->transaction_type,
        {body->transaction_content.bytes, body->transaction_content.bytes + body->transaction_content.size}
       };
 

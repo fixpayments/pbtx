@@ -107,7 +107,7 @@ program
             network_id: BigInt(networkid),
             actor: BigInt(cmdopts.actor),
             seqnum: Number.parseInt(cmdopts.seqnum),
-            tansaction_type: Number.parseInt(cmdopts.type)
+            transaction_type: Number.parseInt(cmdopts.type)
         };
         if( cmdopts.content ) {
             bodydata.transaction_content = cmdopts.content;

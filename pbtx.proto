@@ -19,7 +19,7 @@ message TransactionBody {
 
     // network-specific transaction type. PBTX does not interpret the
     // typ[e and content, and passes them over for processing
-    uint32 tansaction_type = 5;
+    uint32 transaction_type = 5;
 
     // transaction content in protobuf format (max length 16384)
     bytes transaction_content = 6;

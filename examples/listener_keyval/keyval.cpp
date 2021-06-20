@@ -25,6 +25,7 @@ CONTRACT keyval : public eosio::contract {
                        uint64_t           actor,
                        uint32_t           seqnum,
                        vector<uint64_t>   cosignors,
+                       uint32_t           transaction_type,
                        vector<uint8_t>    transaction_content )
   {
     name pbtxcontract(get_iprop(name("pbtxcontract")));
@@ -32,19 +33,21 @@ CONTRACT keyval : public eosio::contract {
     require_auth(pbtxcontract);
     require_auth(worker);
 
-    keyval_Command cmd;
+    check(transaction_content.size() > 0, "empty transaction_content");
+
+    keyval_Command* cmd = (keyval_Command*) malloc(sizeof(keyval_Command));
     pb_istream_t cmd_stream = pb_istream_from_buffer(transaction_content.data(), transaction_content.size());
-    check(pb_decode(&cmd_stream, keyval_Command_fields, &cmd), cmd_stream.errmsg);
+    check(pb_decode(&cmd_stream, keyval_Command_fields, cmd), cmd_stream.errmsg);
 
     keyval_table kv(_self, _self.value);
-    auto kvitr = kv.find(cmd.key);
+    auto kvitr = kv.find(cmd->key);
     if( kvitr == kv.end() ) {
-      switch(cmd.which_cmd)
+      switch(cmd->which_cmd)
         {
         case keyval_Command_cmdset_tag:
           kv.emplace(worker, [&]( auto& row ) {
-                               row.key = cmd.key;
-                               row.val = cmd.cmd.cmdset.val;
+                               row.key = cmd->key;
+                               row.val = cmd->cmd.cmdset.val;
                              });
           break;
 
@@ -52,15 +55,15 @@ CONTRACT keyval : public eosio::contract {
           check(false, "Entry does not exist");
           break;
         default:
-          check(false, "Invalid command: " + to_string(cmd.which_cmd));
+          check(false, "Invalid command: " + to_string(cmd->which_cmd));
         };
     }
     else {
-      switch(cmd.which_cmd)
+      switch(cmd->which_cmd)
         {
         case keyval_Command_cmdset_tag:
           kv.modify(*kvitr, worker, [&]( auto& row ) {
-                                      row.val = cmd.cmd.cmdset.val;
+                                      row.val = cmd->cmd.cmdset.val;
                                     });
           break;
 
@@ -69,7 +72,7 @@ CONTRACT keyval : public eosio::contract {
           break;
 
         default:
-          check(false, "Invalid command: " + to_string(cmd.which_cmd));
+          check(false, "Invalid command: " + to_string(cmd->which_cmd));
         };
     }
   }

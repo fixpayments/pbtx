@@ -40,6 +40,7 @@ CONTRACT pbtx : public eosio::contract {
     uint64_t           actor;
     uint32_t           seqnum;
     vector<uint64_t>   cosignors;
+    uint32_t           transaction_type;
     vector<uint8_t>    transaction_content;
   };
 

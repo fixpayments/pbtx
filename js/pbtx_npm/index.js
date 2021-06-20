@@ -125,11 +125,11 @@ class PBTX {
 
         tb.setSeqnum(data.seqnum);
 
-        if( !Number.isInteger(data.tansaction_type) || data.tansaction_type < 0 ) {
-            throw Error('tansaction_type must be an unsigned integer: ' + data.tansaction_type);
+        if( !Number.isInteger(data.transaction_type) || data.transaction_type < 0 ) {
+            throw Error('transaction_type must be an unsigned integer: ' + data.transaction_type);
         }
 
-        tb.setTansactionType(data.tansaction_type);
+        tb.setTransactionType(data.transaction_type);
 
         if( data.transaction_content ) {
             tb.setTransactionContent(data.transaction_content);
