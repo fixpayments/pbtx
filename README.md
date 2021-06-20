@@ -36,30 +36,32 @@ actors, and validates arriving transactions. It sends notifications to
 network-specific listeners for further processing of the transaction
 content.
 
-# Dependencies
 
-* eosio 2.0^
-* eosio.cdt 1.6^
-* cmake 3.5^
-* nanopb
+Installation
+------------
+
+Dependencies
+
+* eosio 2.0 compiled from sources
+* eosio.cdt 1.6
+* cmake 3.5
 * python3-protobuf
 * protobuf-compiler(protoc)
 
-# Compiling
-
 ```
-./build.sh -e /root/eosio/2.0 -c /usr/opt/eosio.cdt -t
+sudo apt install -y python3-protobuf protobuf-compiler cmake
+
+git clone https://github.com/fixpayments/pbtx.git
+cd pbtx
+git submodule update --init --recursive
+
+# specify the location of CDT with -c option
+# If unit tests are needed, use -t flag and specify the location of compiled  eosio-2.0 with -e option
+./build.sh -e /root/eosio/2.0 -c /usr -t
 ```
 
-# Deploying
+Deployoing the contract:
 
 ```
 cleos set contract <your_account> ./build/Release/pbtx pbtx.wasm pbtx.abi
-```
-
-Ubuntu 18.04
-
-```
- sudo apt install python3-protobuf
- sudo apt install protobuf-compiler
 ```
