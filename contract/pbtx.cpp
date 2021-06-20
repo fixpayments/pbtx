@@ -75,32 +75,32 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   check(nwitr != _networks.end(), "Unknown network");
   require_auth(nwitr->admin_acc);
 
-  pbtx_Permission perm;
+  pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(permission.data(), permission.size());
-  check(pb_decode(&perm_stream, pbtx_Permission_fields, &perm), perm_stream.errmsg);
+  check(pb_decode(&perm_stream, pbtx_Permission_fields, perm), perm_stream.errmsg);
 
-  check(perm.threshold > 0, "Threshold cannot be zero");
+  check(perm->threshold > 0, "Threshold cannot be zero");
   uint64_t weights_sum = 0;
-  for( uint32_t i = 0; i < perm.keys_count; i++ ) {
-    check(perm.keys[i].weight > 0, "Key weight cannot be zero in key #" + to_string(i));
-    check(perm.keys[i].key.type == pbtx_KeyType_EOSIO_KEY, "Unknown key type: " + to_string(perm.keys[i].key.type) +
+  for( uint32_t i = 0; i < perm->keys_count; i++ ) {
+    check(perm->keys[i].weight > 0, "Key weight cannot be zero in key #" + to_string(i));
+    check(perm->keys[i].key.type == pbtx_KeyType_EOSIO_KEY, "Unknown key type: " + to_string(perm->keys[i].key.type) +
           " in key #" + to_string(i));
-    check(perm.keys[i].key.key_bytes.size >= 34, "Key #" + to_string(i) + " is too short");
-    weights_sum += perm.keys[i].weight;
+    check(perm->keys[i].key.key_bytes.size >= 34, "Key #" + to_string(i) + " is too short");
+    weights_sum += perm->keys[i].weight;
   }
-  check(weights_sum >= perm.threshold, "Threshold cannot be higher than sum of weights");
+  check(weights_sum >= perm->threshold, "Threshold cannot be higher than sum of weights");
 
   actorperm _actorperm(_self, network_id);
-  auto actpermitr = _actorperm.find(perm.actor);
+  auto actpermitr = _actorperm.find(perm->actor);
   if( actpermitr == _actorperm.end() ) {
     _actorperm.emplace(nwitr->admin_acc, [&]( auto& row ) {
-        row.actor = perm.actor;
+        row.actor = perm->actor;
         row.permission = permission;
       });
 
     actorseq _actorseq(_self, network_id);
     _actorseq.emplace(nwitr->admin_acc, [&]( auto& row ) {
-        row.actor = perm.actor;
+        row.actor = perm->actor;
         row.seqnum = 0;
       });
   }
@@ -143,9 +143,9 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
 
 void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm, const pbtx_Signature& sig)
 {
-  pbtx_Permission perm;
+  pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(pbperm.data(), pbperm.size());
-  check(pb_decode(&perm_stream, pbtx_Permission_fields, &perm), perm_stream.errmsg);
+  check(pb_decode(&perm_stream, pbtx_Permission_fields, perm), perm_stream.errmsg);
 
   uint32_t sum_weights = 0;
 
@@ -162,25 +162,27 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
     }
 
     bool matched = false;
-    for( uint32_t j=0; j<perm.keys_count; j++ ) {
-      datastream ds(perm.keys[j].key.key_bytes.bytes, perm.keys[j].key.key_bytes.size);
+    for( uint32_t j=0; j<perm->keys_count; j++ ) {
+      datastream ds(perm->keys[j].key.key_bytes.bytes, perm->keys[j].key.key_bytes.size);
       public_key perm_key;
       ds >> perm_key;
       if( recovered_key == perm_key ) {
-        sum_weights += perm.keys[j].weight;
+        sum_weights += perm->keys[j].weight;
         matched = true;
         break;
       }
     }
 
     if( !matched ) {
-      check(false, "Signature #" + to_string(i) + " does not match any keys of actor #" + to_string(perm.actor));
+      check(false, "Signature #" + to_string(i) + " does not match any keys of actor #" + to_string(perm->actor));
     }
   }
 
-  if( sum_weights < perm.threshold ) {
-    check(false, "Insufficient signatures weight for actor #" + to_string(perm.actor));
+  if( sum_weights < perm->threshold ) {
+    check(false, "Insufficient signatures weight for actor #" + to_string(perm->actor));
   }
+  
+  free(perm);
 }
 
 
