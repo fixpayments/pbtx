@@ -22,13 +22,11 @@ protected:
 public:
 	pbtx_tester();
 
-private:
-	void pbtx_init();
-
-	std::vector<uint8_t> encode_permisson(const uint64_t &actor,
-										  const uint32_t &threshold,
-										  const pb_size_t &keys_count,
-										  const key &keys);
+	std::vector<uint8_t> encode_permisson(const uint64_t &actor, const uint32_t &threshold,
+										  const pb_size_t &keys_count, const key &keys);
 
 	std::vector<uint8_t> encode_transaction();
+
+private:
+	void pbtx_init();
 };
