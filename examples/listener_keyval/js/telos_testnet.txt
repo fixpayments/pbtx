@@ -53,3 +53,8 @@ tTcleos push action pbtxtest1111 regnetwork '["9223372036854775798", "pbtxadmin1
 ./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 showperm 9223372036854775798 9223372036854775777
 
 
+
+
+##### dummy transaction
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 trx 1 --worker=pbtxworker11 --actor=1 --seqnum=1 --type=99 --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju

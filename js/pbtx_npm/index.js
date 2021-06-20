@@ -2,9 +2,9 @@
 
 const pbtx_pb = require('./pbtx_pb');
 const EC = require('elliptic').ec;
-const { PublicKey } = require('eosjs');
-const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
+const { PrivateKey } = require('eosjs/dist/PrivateKey');
 const { SerialBuffer } = require('eosjs/dist/eosjs-serialize');
+const { publicKeyToLegacyString, stringToPublicKey } = require('eosjs/dist/eosjs-numeric');
 
 const defaultEc = new EC('secp256k1');
 
@@ -79,8 +79,10 @@ class PBTX {
             let buffer = new SerialBuffer()
             buffer.pushArray(key.getKeyBytes());
 
+            const keyNewFormat = buffer.getPublicKey();
+
             data.keys.push({weight: keyweight.getWeight(),
-                            key: buffer.getPublicKey()});
+                            key: publicKeyToLegacyString(stringToPublicKey(keyNewFormat))});
         });
 
         return data;
@@ -96,13 +98,13 @@ class PBTX {
             throw Error('network_id must be a BigInt');
         }
 
-        tb.setNetworkId(data.network_id);
+        tb.setNetworkId(data.network_id.toString());
 
         if( data.actor == null || typeof(data.actor) !== 'bigint' ) {
             throw Error('actor must be a BigInt');
         }
 
-        tb.setActor(data.actor);
+        tb.setActor(data.actor.toString());
 
         if( data.cosignors ) {
             if( !Array.isArray(data.cosignors) ) {
@@ -113,21 +115,21 @@ class PBTX {
                 if( typeof(account) !== 'bigint' ) {
                     throw Error('cosignors must be BigInt');
                 }
-                tb.addCosignor(account);
+                tb.addCosignor(account.toString());
             });
         }
 
         if( !Number.isInteger(data.seqnum) || data.seqnum < 1 ) {
-            throw Error('seqnum must be a positive integer');
+            throw Error('seqnum must be a positive integer: ' + data.seqnum);
         }
 
         tb.setSeqnum(data.seqnum);
 
         if( !Number.isInteger(data.tansaction_type) || data.tansaction_type < 0 ) {
-            throw Error('tansaction_type must be an unsigned integer');
+            throw Error('tansaction_type must be an unsigned integer: ' + data.tansaction_type);
         }
 
-        tb.setTtransactionType(data.tansaction_type);
+        tb.setTansactionType(data.tansaction_type);
 
         if( data.transaction_content ) {
             tb.setTransactionContent(data.transaction_content);
@@ -149,19 +151,17 @@ class PBTX {
 
         privateKeys.forEach( key => {
             const priv = PrivateKey.fromString(key);
-            const privElliptic = priv.toElliptic();
-            const privateKey = PrivateKey.fromElliptic(privElliptic, priv.getType());
-            const signature = privateKey.sign(digest, false);
+            const signature = priv.sign(digest, false);
 
-            let buffer = eosjs.SerialBuffer();
-            buffer.push(signature.type);
-            buffer.push(signature.data);
+            let buffer = new SerialBuffer();
+            buffer.push(signature.signature.type);
+            buffer.pushArray(signature.signature.data);
 
             let sig = new pbtx_pb.Signature();
             sig.setType(pbtx_pb.KeyType.EOSIO_KEY);
             sig.addSigBytes(buffer.asUint8Array());
 
-            tx.addSignature(sig);
+            tx.addSignatures(sig);
         });
 
         return tx;
@@ -194,6 +194,7 @@ class PBTX {
 
 
     static async sendTransaction(tx, api, contract, worker) {
+        // console.log(Buffer.from(tx.serializeBinary()).toString('hex'));
         return api.transact(
             {
                 actions:
@@ -206,7 +207,7 @@ class PBTX {
                             permission: 'active'} ],
                         data: {
                             worker: worker,
-                            trx_input: tx.serializeBinary(),
+                            trx_input: tx.serializeBinary()
                         },
                     }
                 ]

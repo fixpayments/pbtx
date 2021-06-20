@@ -25,9 +25,7 @@ program
         const options = program.opts();
 
         let perm = PBTX.makePermission(JSON.parse(jsdata));
-        const rpc = new JsonRpc(options.url, { fetch });
-        const api = new Api({ rpc: rpc, signatureProvider: new KeosdSignatureProvider(),
-                              textDecoder: new TextDecoder(), textEncoder: new TextEncoder()});
+        const api = get_api();
 
         PBTX.setPermission(networkid, perm, api, options.contract, cmdopts.admin)
             .then((res) => {
@@ -93,11 +91,57 @@ program
     });
 
 
+program
+    .command('trx <networkid>')
+    .requiredOption('--actor [value]', 'actor ID')
+    .requiredOption('--seqnum [value]', 'transaction sequence number')
+    .requiredOption('--type [value]', 'transaction type')
+    .requiredOption('--actorkey [value]', 'Actor private key')
+    .requiredOption('--worker [value]', 'worker account name')
+    .option('--content [value]', 'transaction content in hex')
+    .description('Execute a PBTX transaction')
+    .action((networkid, cmdopts) => {
+        const options = program.opts();
+
+        let bodydata = {
+            network_id: BigInt(networkid),
+            actor: BigInt(cmdopts.actor),
+            seqnum: Number.parseInt(cmdopts.seqnum),
+            tansaction_type: Number.parseInt(cmdopts.type)
+        };
+        if( cmdopts.content ) {
+            bodydata.transaction_content = cmdopts.content;
+        }
+
+        const body = PBTX.makeTransactionBody(bodydata);
+
+        const tx = PBTX.signTransactionBody(body, [cmdopts.actorkey]);
+        const api = get_api();
+
+        PBTX.sendTransaction(tx, api, options.contract, cmdopts.worker)
+            .then((res) => {
+                console.log('Transaction ID: ' + res.transaction_id);
+                process.exit(0);
+            })
+            .catch((err) => {
+                console.error(err);
+                process.exit(1);
+            });
+    });
+
 
 program.parse(process.argv);
 
 
 
+
+function get_api() {
+    const options = program.opts();
+    const rpc = new JsonRpc(options.url, { fetch });
+    const api = new Api({ rpc: rpc, signatureProvider: new KeosdSignatureProvider(),
+                          textDecoder: new TextDecoder(), textEncoder: new TextEncoder()});
+    return api;
+}
 
 
 
