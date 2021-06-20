@@ -37,7 +37,7 @@ try
     key keys{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permisson = encode_permisson(string_to_uint64_t("alice"), 1, keys.size(), keys);
     
-    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1000, permisson));
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1000, permisson));
 
     // auto permission = m_pbtx_api.get_actor_permission(1000, string_to_uint64_t("alice"));
 
