@@ -104,11 +104,17 @@ The body is an array of bytes where TransactionBody message is encoded
 in Protobuf format, signed by those signatures.
 
 The body message contains network ID, actor ID, optional cosignors,
-sequence number, transaction type and content.
+sequence number, previous body's hash, transaction type and content.
 
 The sequence number MUST be consecutive among actor's
 transactions. The PBTX smart contract keeps track of last seen
 sequence number, and is only accepting the number incremented by one.
+
+The previous body's hash is the first 64 bits of sha256 hash of
+previous transaction body, recorded into a 64-bit integer in
+big-endian format. That is, the upper byte of the integer contains the
+first byte of the hash. The `prevhash` field in the new transaction
+MUST match the hash of the previous transaction body.
 
 Transaction type is a 32-bit integer that underlying payload
 processors are free to interpret for their purpose.

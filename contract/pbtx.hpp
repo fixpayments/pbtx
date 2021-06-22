@@ -88,6 +88,7 @@ CONTRACT pbtx : public eosio::contract {
   struct [[eosio::table("actorseq")]] actorseq_row {
     uint64_t           actor;
     uint32_t           seqnum;     // sequence number. Only transactions with seqnum+1 are accepted
+    uint64_t           prevhash;   // previous body hash (first 64 bits from sha256 in big-endian)
     time_point         last_modified;
     auto primary_key()const { return actor; }
   };
