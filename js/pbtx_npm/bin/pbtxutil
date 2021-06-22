@@ -111,6 +111,7 @@ program
     .command('trx <networkid>')
     .requiredOption('--actor [value]', 'actor ID')
     .requiredOption('--seqnum [value]', 'transaction sequence number')
+    .requiredOption('--prev [value]', 'previous transaction hash')
     .requiredOption('--type [value]', 'transaction type')
     .requiredOption('--actorkey [value]', 'Actor private key')
     .requiredOption('--worker [value]', 'worker account name')
@@ -123,6 +124,7 @@ program
             network_id: BigInt(networkid),
             actor: BigInt(cmdopts.actor),
             seqnum: Number.parseInt(cmdopts.seqnum),
+            prev_hash: BigInt(cmdopts.prev),
             transaction_type: Number.parseInt(cmdopts.type)
         };
         if( cmdopts.content ) {
@@ -130,6 +132,7 @@ program
         }
 
         const body = PBTX.makeTransactionBody(bodydata);
+        console.log('body_hash: ' + PBTX.getBodyHash(body).toString());
 
         const tx = PBTX.signTransactionBody(body, [cmdopts.actorkey]);
         const api = get_api();

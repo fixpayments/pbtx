@@ -238,7 +238,7 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
           ", received seqnum=" + to_string(body->seqnum));
   }
 
-  if( actseqitr->seqnum != 0 && body->prev_hash != actseqitr->prev_hash ) {
+  if( body->prev_hash != actseqitr->prev_hash ) {
     check(false, "Previous body hash mismatch. Expected " + to_string(actseqitr->prev_hash) +
           ", received prev_hash=" + to_string(body->prev_hash));
   }
@@ -250,16 +250,15 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
 
   checksum256 digest = sha256((const char*)trx->body.bytes, trx->body.size);
 
-  uint64_t prev_hash = 0;
+  uint64_t body_hash = 0;
   auto digest_array = digest.extract_as_byte_array();
   for( uint32_t i = 0; i < 8; i++ ) {
-    prev_hash <<= 8;
-    prev_hash |= digest_array[i];
+    body_hash = (body_hash << 8) | digest_array[i];
   }
 
   _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
                                              row.seqnum++;
-                                             row.prev_hash = prev_hash;
+                                             row.prev_hash = body_hash;
                                              row.last_modified = current_time_point();
                                            });
 

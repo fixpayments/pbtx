@@ -141,6 +141,12 @@ class PBTX {
 
         tb.setSeqnum(data.seqnum);
 
+        if( data.prev_hash == null || typeof(data.prev_hash) !== 'bigint' ) {
+            throw Error('prev_hash must be a BigInt');
+        }
+
+        tb.setPrevHash(data.prev_hash.toString());
+
         if( !Number.isInteger(data.transaction_type) || data.transaction_type < 0 ) {
             throw Error('transaction_type must be an unsigned integer: ' + data.transaction_type);
         }
@@ -154,7 +160,18 @@ class PBTX {
         return tb;
     }
 
+    // returns 64-bit BigInt that is a value passed to the next
+    // transaction as prev_hash
+    static getBodyHash(body) {
+        const serializedBody = body.serializeBinary();
+        const digest = defaultEc.hash().update(serializedBody).digest();
 
+        let bodyhash = BigInt(0);
+        for( let i=0; i < 8; i++ ) {
+            bodyhash = (bodyhash << 8n) | BigInt(digest[i]);
+        }
+        return bodyhash;
+    }
 
     // gets TransactionBody object and array of private keys in string format
     // returns Transaction object

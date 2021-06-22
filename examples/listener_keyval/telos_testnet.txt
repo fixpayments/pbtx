@@ -1,11 +1,11 @@
 
 alias tTcleos='cleos -v -u https://testnet.persiantelos.com'
 
-tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxtest1111 cc32dninexxx@active
+tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxtest1112 cc32dninexxx@active
 
-tTcleos set account permission pbtxtest1111 active --add-code
+tTcleos set account permission pbtxtest1112 active --add-code
 
-tTcleos set contract pbtxtest1111 build/Release/contract/ pbtx.wasm pbtx.abi
+tTcleos set contract pbtxtest1112 build/Release/contract/ pbtx.wasm pbtx.abi
 
 
 
@@ -14,11 +14,11 @@ tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu
 
 tTcleos system newaccount --buy-ram-kbytes 500  --stake-net "1 TLOS" --stake-cpu "1 TLOS" cc32dninexxx pbtxworker11 cc32dninexxx@active EOS6ZFae47hRtcDPEeXQVo3eqmyBboEx7fZo5xznov1sogUYmNdeo
 
-tTcleos set account permission pbtxworker11 active '{"threshold":1,"accounts": [{"permission":{"actor":"pbtxtest1111","permission":"eosio.code"},"weight":1}], "keys":[{"key":"EOS6ZFae47hRtcDPEeXQVo3eqmyBboEx7fZo5xznov1sogUYmNdeo","weight":1}]}'
+tTcleos set account permission pbtxworker11 active '{"threshold":1,"accounts": [{"permission":{"actor":"pbtxtest1112","permission":"eosio.code"},"weight":1}], "keys":[{"key":"EOS6ZFae47hRtcDPEeXQVo3eqmyBboEx7fZo5xznov1sogUYmNdeo","weight":1}]}'
 
 
 
-tTcleos push action pbtxtest1111 regnetwork '[1, "pbtxadmin111", [], 0'] -p pbtxadmin111
+tTcleos push action pbtxtest1112 regnetwork '[1, "pbtxadmin111", [], 0'] -p pbtxadmin111
 
 
 cleos create key --to-console
@@ -26,17 +26,17 @@ Private key: 5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
 Public key: EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw
 
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 1 '{"actor":1, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 setperm --admin=pbtxadmin111 1 '{"actor":1, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
 
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 showperm 1 1
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 showperm 1 1
 {
-  "actor": 1,
+  "actor": "1",
   "threshold": 1,
   "keys": [
     {
       "weight": 1,
-      "key": "PUB_K1_8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPuK7gzd"
+      "key": "EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw"
     }
   ]
 }
@@ -45,19 +45,25 @@ Public key: EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw
 
 #### try big 64-bit numbers
 
-tTcleos push action pbtxtest1111 regnetwork '["9223372036854775798", "pbtxadmin111", [], 0'] -p pbtxadmin111
+tTcleos push action pbtxtest1112 regnetwork '["9223372036854775798", "pbtxadmin111", [], 0'] -p pbtxadmin111
 
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 "9223372036854775798" '{"actor":"9223372036854775777", "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 setperm --admin=pbtxadmin111 "9223372036854775798" '{"actor":"9223372036854775777", "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 showperm 9223372036854775798 9223372036854775777
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 showperm 9223372036854775798 9223372036854775777
 
 
 
 
 ##### dummy transaction
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 trx 1 --worker=pbtxworker11 --actor=1 --seqnum=1 --type=99 --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 trx 1 --worker=pbtxworker11 --actor=1 --seqnum=1 --prev=0 --type=99 --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+# result:
+body_hash: 5123866026275952426
+Transaction ID: 28caf92ae40cf77607136340fc1ab4d924a66930a91516d61da1f44a72b3e2ac
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 trx 1 --worker=pbtxworker11 --actor=1 --seqnum=2 --prev=5123866026275952426 --type=99 --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+
 
 
 
@@ -67,19 +73,29 @@ tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cp
 
 tTcleos set contract pbtxkeyval11 build/Release/listener_keyval/ keyval.wasm keyval.abi
 
-tTcleos push action pbtxkeyval11 pbtxcontract '["pbtxtest1111"]' -p pbtxkeyval11
+tTcleos push action pbtxkeyval11 pbtxcontract '["pbtxtest1112"]' -p pbtxkeyval11
 
 
 
-tTcleos push action pbtxtest1111 regnetwork '[10, "pbtxadmin111", ["pbtxkeyval11"], 0'] -p pbtxadmin111
+tTcleos push action pbtxtest1112 regnetwork '[10, "pbtxadmin111", ["pbtxkeyval11"], 0'] -p pbtxadmin111
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 setperm --admin=pbtxadmin111 10 '{"actor":55, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 setperm --admin=pbtxadmin111 10 '{"actor":55, "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
 
-./examples/listener_keyval/js/keyval_content set 19 blahblah 
+./examples/listener_keyval/js/keyval_content set 19 blahblah
 0813120a0a08626c6168626c6168
+
+./examples/listener_keyval/js/keyval_content set 19 blahblahblah
+0813120e0a0c626c6168626c6168626c6168
 
 ./examples/listener_keyval/js/keyval_content del 19
 08131a00
 
-./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1111 trx 10 --worker=pbtxworker11 --actor=55 --seqnum=1 --type=0 --content=0813120a0a08626c6168626c6168  --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 trx 10 --worker=pbtxworker11 --actor=55 --seqnum=1 --prev=0 --type=0 --content=0813120a0a08626c6168626c6168  --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+# result:
+body_hash: 66433744244149695
+Transaction ID: 64274bcde4f4ddb935e320c02b9f206450df0bdfdc959c29cc9fb30d32c0397c
+
+
+./js/pbtx_npm/bin/pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 trx 10 --worker=pbtxworker11 --actor=55 --seqnum=2 --prev=66433744244149695 --type=0 --content=0813120e0a0c626c6168626c6168626c6168  --actorkey=5K83nRCUoAuZ5F76Y6Fo8LGsWw36axUXN2D7E6BLRvxqLtkKkju
+
 
