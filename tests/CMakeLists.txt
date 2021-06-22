@@ -54,6 +54,7 @@ file(GLOB PBTX_UNIT_TESTS
 "./pbtx/suites/*.hpp"
 "./../nanopb/pb_common.c"
 "./../nanopb/pb_encode.c"
+"./../nanopb/pb_decode.c"
 ${CMAKE_BINARY_DIR}/../contract/pbtx.pb.c
 )
 

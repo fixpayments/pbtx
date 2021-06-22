@@ -3,6 +3,7 @@
 #include "pbtx_api.hpp"
 #include "pbtx.pb.h"
 #include <pb_encode.h>
+#include <pb_decode.h>
 #include <boost/test/unit_test.hpp>
 #include <eosio/testing/tester.hpp>
 
@@ -26,6 +27,9 @@ public:
 										  const pb_size_t &keys_count, const key &keys);
 
 	std::vector<uint8_t> encode_transaction();
+
+	void decode_permisson(const std::vector<uint8_t> &buffer);
+	void decode_transaction(const std::vector<uint8_t> &buffer);
 
 private:
 	void pbtx_init();
