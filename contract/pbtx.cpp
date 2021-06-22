@@ -118,7 +118,7 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
     _actorseq.emplace(nwitr->admin_acc, [&]( auto& row ) {
         row.actor = perm->actor;
         row.seqnum = 0;
-        row.prevhash = 0;
+        row.prev_hash = 0;
       });
   }
   else {
@@ -238,9 +238,9 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
           ", received seqnum=" + to_string(body->seqnum));
   }
 
-  if( actseqitr->seqnum != 0 && body->prevhash != actseqitr->prevhash ) {
-    check(false, "Previous body hash mismatch. Expected " + to_string(actseqitr->prevhash) +
-          ", received prevhash=" + to_string(body->prevhash));
+  if( actseqitr->seqnum != 0 && body->prev_hash != actseqitr->prev_hash ) {
+    check(false, "Previous body hash mismatch. Expected " + to_string(actseqitr->prev_hash) +
+          ", received prev_hash=" + to_string(body->prev_hash));
   }
 
   if( trx->signatures_count != body->cosignors_count + 1 ) {
@@ -250,16 +250,16 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
 
   checksum256 digest = sha256((const char*)trx->body.bytes, trx->body.size);
 
-  uint64_t prevhash = 0;
+  uint64_t prev_hash = 0;
   auto digest_array = digest.extract_as_byte_array();
   for( uint32_t i = 0; i < 8; i++ ) {
-    prevhash <<= 8;
-    prevhash |= digest_array[i];
+    prev_hash <<= 8;
+    prev_hash |= digest_array[i];
   }
 
   _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
                                              row.seqnum++;
-                                             row.prevhash = prevhash;
+                                             row.prev_hash = prev_hash;
                                              row.last_modified = current_time_point();
                                            });
 

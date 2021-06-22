@@ -20,7 +20,7 @@ message TransactionBody {
     // previous TransactionBody's hash: first 8 bytes of sha256,
     // stored as big-endian (first byte of the sha256 hash in
     // higherst byte of prevhash)
-    fixed64 prevhash = 5 [jstype = JS_STRING];
+    fixed64 prev_hash = 5 [jstype = JS_STRING];
 
     // network-specific transaction type. PBTX does not interpret the
     // typ[e and content, and passes them over for processing

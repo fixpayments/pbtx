@@ -113,7 +113,7 @@ sequence number, and is only accepting the number incremented by one.
 The previous body's hash is the first 64 bits of sha256 hash of
 previous transaction body, recorded into a 64-bit integer in
 big-endian format. That is, the upper byte of the integer contains the
-first byte of the hash. The `prevhash` field in the new transaction
+first byte of the hash. The `prev_hash` field in the new transaction
 MUST match the hash of the previous transaction body.
 
 Transaction type is a 32-bit integer that underlying payload
