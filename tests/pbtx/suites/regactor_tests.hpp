@@ -20,18 +20,19 @@ try
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Key weight cannot be zero in key #0"),
                         m_pbtx_api.regactor(N(bob), 1000, permission2));
 
-    pbtx_KeyType type = pbtx_KeyType_EOSIO_KEY;
-    key keys3{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    pbtx_KeyType ktype = (pbtx_KeyType)5;
+    key keys3{{fc::raw::pack(get_public_key(N(alice), "active")), ktype, 1}};
     auto permission3 = encode_permisson(string_to_uint64_t("alice"), 1, keys3.size(), keys3);
 
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown key type:"),
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown key type: 5 in key #0"),
                         m_pbtx_api.regactor(N(bob), 1000, permission3));
 
-    // key keys4{{fc::raw::pack(fc::crypto::public_key()), pbtx_KeyType_EOSIO_KEY, 1}};
-    // auto permission4 = encode_permisson(string_to_uint64_t("alice"), 1, keys4.size(), keys4);
+    std::vector<char> shortkey {0, 55, 55, 55, 55, 55, 55, 55, 55};
+    key keys4{{shortkey, pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permission4 = encode_permisson(string_to_uint64_t("alice"), 1, keys4.size(), keys4);
 
-    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Key # is too short"),
-    //                     m_pbtx_api.regactor(N(bob), 1000, v));
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Key #0 is too short"),
+                        m_pbtx_api.regactor(N(bob), 1000, permission4));
     
     key keys5{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permission5 = encode_permisson(string_to_uint64_t("alice"), 2, keys5.size(), keys5);
