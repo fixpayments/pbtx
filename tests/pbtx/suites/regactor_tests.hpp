@@ -14,28 +14,26 @@ try
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Threshold cannot be zero"),
                         m_pbtx_api.regactor(N(bob), 1000, {}));
 
-    key keys2{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 0}};
+    key keys2{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 0}};
     auto permission2 = encode_permisson(string_to_uint64_t("alice"), 1, keys2.size(), keys2);
 
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Key weight cannot be zero in key #0"),
                         m_pbtx_api.regactor(N(bob), 1000, permission2));
 
-    // key keys3{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 1}};
-    // auto permission3 = encode_permisson(string_to_uint64_t("alice"), 1, keys3.size(), keys3);
+    pbtx_KeyType type = pbtx_KeyType_EOSIO_KEY;
+    key keys3{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permission3 = encode_permisson(string_to_uint64_t("alice"), 1, keys3.size(), keys3);
 
-    // permission3[19] = 1;
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown key type:"),
+                        m_pbtx_api.regactor(N(bob), 1000, permission3));
 
-    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown key type:"),
-    //                     m_pbtx_api.regactor(N(bob), 1000, permission3));
-
-    // std::string str_key("EOS5hV1LkHKpp3q2acWnaoFHuev1vpzjDyTXsWDffgehXFhZk45gt");
-    // key keys4{{fc::crypto::public_key(str_key), pbtx_KeyType_EOSIO_KEY, 1}};
+    // key keys4{{fc::raw::pack(fc::crypto::public_key()), pbtx_KeyType_EOSIO_KEY, 1}};
     // auto permission4 = encode_permisson(string_to_uint64_t("alice"), 1, keys4.size(), keys4);
 
     // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Key # is too short"),
-    //                     m_pbtx_api.regactor(N(bob), 1000, permission4));
-
-    key keys5{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 1}};
+    //                     m_pbtx_api.regactor(N(bob), 1000, v));
+    
+    key keys5{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permission5 = encode_permisson(string_to_uint64_t("alice"), 2, keys5.size(), keys5);
 
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Threshold cannot be higher than sum of weights"),
@@ -48,7 +46,7 @@ try
 {
     uint64_t network_id = 1000;
     auto actor = string_to_uint64_t("alice");
-    key keys{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 1}};
+    key keys{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permission = encode_permisson(actor, 1, keys.size(), keys);
   
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), network_id, permission));

@@ -38,10 +38,8 @@ std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
 
     auto i = 0;
 
-    for (const auto &[key, key_type, weight] : keys)
+    for (const auto &[key_buff, key_type, weight] : keys)
     {
-        std::vector<char> key_buff = fc::raw::pack(key);
-
         permisson.keys[i].has_key = true;
         permisson.keys[i].key.type = key_type;
         permisson.keys[i].weight = weight;

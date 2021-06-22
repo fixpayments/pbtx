@@ -14,7 +14,7 @@ using namespace fc;
 using namespace std;
 
 using mvo = fc::mutable_variant_object;
-using key = std::vector<std::tuple<fc::crypto::public_key, pbtx_KeyType, uint32_t>>;
+using key = std::vector<std::tuple<std::vector<char>, pbtx_KeyType, uint32_t>>;
 
 class pbtx_tester : public tester {
 protected:
