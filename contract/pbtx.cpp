@@ -92,7 +92,7 @@ ACTION pbtx::netmetadata(uint64_t network_id, vector<uint8_t> metadata)
   }
 
   if( nwitr->flags & PBTX_FLAG_HISTORY ) {
-    add_history(network_id, HISTORY_EVENT_NETMETADATA, metadata, admin_acc);
+    add_history(network_id, PBTX_HISTORY_EVENT_NETMETADATA, metadata, admin_acc);
   }
 }
 
@@ -166,7 +166,7 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   }
 
   if( nwitr->flags & PBTX_FLAG_HISTORY ) {
-    add_history(network_id, HISTORY_EVENT_REGACTOR, permission, admin_acc);
+    add_history(network_id, PBTX_HISTORY_EVENT_REGACTOR, permission, admin_acc);
   }
 }
 
@@ -195,7 +195,7 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
   }
 
   if( nwitr->flags & PBTX_FLAG_HISTORY ) {
-    add_history(network_id, HISTORY_EVENT_UNREGACTOR, permission, nwitr->admin_acc);
+    add_history(network_id, PBTX_HISTORY_EVENT_UNREGACTOR, permission, nwitr->admin_acc);
   }
 }
 
@@ -338,7 +338,7 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
   }
 
   if( nwitr->flags & PBTX_FLAG_HISTORY ) {
-    add_history(network_id, HISTORY_EVENT_EXECTRX, trx_input, worker);
+    add_history(network_id, PBTX_HISTORY_EVENT_EXECTRX, trx_input, worker);
   }
 }
 

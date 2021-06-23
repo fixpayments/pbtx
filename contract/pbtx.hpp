@@ -17,6 +17,7 @@
 #include <eosio/eosio.hpp>
 #include <eosio/multi_index.hpp>
 #include <eosio/time.hpp>
+#include "pbtx_contract_constants.hpp"
 
 using namespace eosio;
 using namespace std;
@@ -29,17 +30,6 @@ CONTRACT pbtx : public eosio::contract {
   pbtx( name self, name code, datastream<const char*> ds ):
     contract(self, code, ds)
     {}
-
-  /*
-    Per-network flags. Upper 16 bits are free to use by listener
-    contracts for their internal needs. Lower 16 bits are reserved for
-    PBTX own use.
-  */
-  const uint32_t PBTX_FLAGS_PBTX_RESERVED = 0x0000FFFF;
-  const uint32_t PBTX_FLAGS_PBTX_KNOWN = 0x00000003;
-  const uint32_t PBTX_FLAG_RAW_NOTIFY  = 1<<0;        // if set, require_recipient is used in notifications
-  const uint32_t PBTX_FLAG_HISTORY     = 1<<1;        // if set, history log is written on all events
-
 
   // register a new network (requires addmin_acc authentication)
   ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags);
@@ -125,11 +115,6 @@ CONTRACT pbtx : public eosio::contract {
   };
 
   typedef eosio::multi_index<name("histid"), histid_row> histid;
-
-  const uint8_t HISTORY_EVENT_NETMETADATA = 1;
-  const uint8_t HISTORY_EVENT_REGACTOR    = 2;
-  const uint8_t HISTORY_EVENT_UNREGACTOR  = 3;
-  const uint8_t HISTORY_EVENT_EXECTRX     = 4;
 
   // history entries, scope=network_id
   struct [[eosio::table("history")]] history_row {
