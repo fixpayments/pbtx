@@ -32,12 +32,13 @@ CONTRACT pbtx : public eosio::contract {
 
   /*
     Per-network flags. Upper 16 bits are free to use by listener
-    contracts for their internal needs. Lowe 16 bits are reserved for
+    contracts for their internal needs. Lower 16 bits are reserved for
     PBTX own use.
   */
   const uint32_t PBTX_FLAGS_PBTX_RESERVED = 0x0000FFFF;
-  const uint32_t PBTX_FLAGS_PBTX_KNOWN = 0x00000001;
-  const uint32_t PBTX_FLAG_RAW_NOTIFY = 1<<0;
+  const uint32_t PBTX_FLAGS_PBTX_KNOWN = 0x00000003;
+  const uint32_t PBTX_FLAG_RAW_NOTIFY  = 1<<0;        // if set, require_recipient is used in notifications
+  const uint32_t PBTX_FLAG_HISTORY     = 1<<1;        // if set, history log is written on all events
 
 
   // register a new network (requires addmin_acc authentication)
@@ -68,9 +69,13 @@ CONTRACT pbtx : public eosio::contract {
     vector<uint8_t>    transaction_content;
   };
 
+
+  // cleans the history up to given ID
+  ACTION cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows);
+  
  private:
 
-  // registry of networks and their admins
+  // registry of networks and their admins, scope=0
   struct [[eosio::table("networks")]] networks_row {
     uint64_t           network_id;
     name               admin_acc;
@@ -82,6 +87,7 @@ CONTRACT pbtx : public eosio::contract {
   typedef eosio::multi_index<name("networks"), networks_row> networks;
 
 
+  // registry of network metadata, scope=0
   struct [[eosio::table("netmetadata")]] netmd_row {
     uint64_t           network_id;
     vector<uint8_t>    data;     // protobuf encoded metadata
@@ -90,7 +96,7 @@ CONTRACT pbtx : public eosio::contract {
 
   typedef eosio::multi_index<name("netmetadata"), netmd_row> netmd;
 
-  // actors registry. Scope=network_id
+  // actors registry, scope=network_id
   struct [[eosio::table("actorperm")]] actorperm_row {
     uint64_t           actor;
     vector<uint8_t>    permission; // protobuf encoded Permission message
@@ -100,7 +106,7 @@ CONTRACT pbtx : public eosio::contract {
   typedef eosio::multi_index<name("actorperm"), actorperm_row> actorperm;
 
 
-  // actor seqence number and last transaction timestamp
+  // actor seqence number and last transaction timestamp, scope=network_id
   struct [[eosio::table("actorseq")]] actorseq_row {
     uint64_t           actor;
     uint32_t           seqnum;     // sequence number. Only transactions with seqnum+1 are accepted
@@ -111,4 +117,31 @@ CONTRACT pbtx : public eosio::contract {
 
   typedef eosio::multi_index<name("actorseq"), actorseq_row> actorseq;
 
+  // last history row identifier, scope=0
+  struct [[eosio::table("histid")]] histid_row {
+    uint64_t           network_id;
+    uint64_t           last_history_id;
+    auto primary_key()const { return network_id; }
+  };
+
+  typedef eosio::multi_index<name("histid"), histid_row> histid;
+
+  const uint8_t HISTORY_EVENT_NETMETADATA = 1;
+  const uint8_t HISTORY_EVENT_REGACTOR    = 2;
+  const uint8_t HISTORY_EVENT_UNREGACTOR  = 3;
+  const uint8_t HISTORY_EVENT_EXECTRX     = 4;
+
+  // history entries, scope=network_id
+  struct [[eosio::table("history")]] history_row {
+    uint64_t           id;
+    uint8_t            event_type;
+    vector<uint8_t>    data;       // protobuf encoded message
+    checksum256        trx_id;     // EOSIO transaction ID and timestamp
+    time_point         trx_time;
+    auto primary_key()const { return id; }
+  };
+
+  typedef eosio::multi_index<name("history"), history_row> history;
+
+  void add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t>  data, name rampayer);
 };

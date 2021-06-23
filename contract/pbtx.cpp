@@ -16,6 +16,7 @@
 
 #include "pbtx.hpp"
 #include <eosio/crypto.hpp>
+#include <eosio/transaction.hpp>
 #include <eosio/system.hpp>
 #include "pbtx.pb.h"
 #include <pb_decode.h>
@@ -82,12 +83,16 @@ ACTION pbtx::netmetadata(uint64_t network_id, vector<uint8_t> metadata)
   }
   else {
     _md.modify(*mditr, admin_acc, [&]( auto& row ) {
-                                          row.data = metadata;
+                                    row.data = metadata;
                                   });
   }
 
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
+  }
+
+  if( nwitr->flags & PBTX_FLAG_HISTORY ) {
+    add_history(network_id, HISTORY_EVENT_NETMETADATA, metadata, admin_acc);
   }
 }
 
@@ -117,7 +122,8 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   networks _networks(_self, 0);
   auto nwitr = _networks.find(network_id);
   check(nwitr != _networks.end(), "Unknown network");
-  require_auth(nwitr->admin_acc);
+  name admin_acc = nwitr->admin_acc;
+  require_auth(admin_acc);
 
   pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(permission.data(), permission.size());
@@ -137,26 +143,30 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   actorperm _actorperm(_self, network_id);
   auto actpermitr = _actorperm.find(perm->actor);
   if( actpermitr == _actorperm.end() ) {
-    _actorperm.emplace(nwitr->admin_acc, [&]( auto& row ) {
-        row.actor = perm->actor;
-        row.permission = permission;
-      });
+    _actorperm.emplace(admin_acc, [&]( auto& row ) {
+                                    row.actor = perm->actor;
+                                    row.permission = permission;
+                                  });
 
     actorseq _actorseq(_self, network_id);
-    _actorseq.emplace(nwitr->admin_acc, [&]( auto& row ) {
-        row.actor = perm->actor;
-        row.seqnum = 0;
-        row.prev_hash = 0;
-      });
+    _actorseq.emplace(admin_acc, [&]( auto& row ) {
+                                   row.actor = perm->actor;
+                                   row.seqnum = 0;
+                                   row.prev_hash = 0;
+                                 });
   }
   else {
-    _actorperm.modify(*actpermitr, nwitr->admin_acc, [&]( auto& row ) {
-        row.permission = permission;
-      });
+    _actorperm.modify(*actpermitr, admin_acc, [&]( auto& row ) {
+                                                row.permission = permission;
+                                              });
   }
 
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
+  }
+
+  if( nwitr->flags & PBTX_FLAG_HISTORY ) {
+    add_history(network_id, HISTORY_EVENT_REGACTOR, permission, admin_acc);
   }
 }
 
@@ -172,6 +182,7 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
   actorperm _actorperm(_self, network_id);
   auto actpermitr = _actorperm.find(actor);
   check(actpermitr != _actorperm.end(), "Unknown actor");
+  vector<uint8_t> permission = actpermitr->permission;
   _actorperm.erase(actpermitr);
 
   actorseq _actorseq(_self, network_id);
@@ -181,6 +192,10 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
 
   for(name rcpt: nwitr->listeners) {
     require_recipient(rcpt);
+  }
+
+  if( nwitr->flags & PBTX_FLAG_HISTORY ) {
+    add_history(network_id, HISTORY_EVENT_UNREGACTOR, permission, nwitr->admin_acc);
   }
 }
 
@@ -245,19 +260,20 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
   pb_istream_t body_stream = pb_istream_from_buffer(trx->body.bytes, trx->body.size);
   check(pb_decode(&body_stream, pbtx_TransactionBody_fields, body), body_stream.errmsg);
 
+  uint64_t network_id = body->network_id;
   networks _networks(_self, 0);
-  auto nwitr = _networks.find(body->network_id);
+  auto nwitr = _networks.find(network_id);
   if( nwitr == _networks.end() ) {
-    check(false, "Unknown network_id: " + to_string(body->network_id));
+    check(false, "Unknown network_id: " + to_string(network_id));
   }
 
-  actorperm _actorperm(_self, body->network_id);
+  actorperm _actorperm(_self, network_id);
   auto actpermitr = _actorperm.find(body->actor);
   if( actpermitr == _actorperm.end() ) {
     check(false, "Unknown actor: " + to_string(body->actor));
   }
 
-  actorseq _actorseq(_self, body->network_id);
+  actorseq _actorseq(_self, network_id);
   auto actseqitr = _actorseq.find(body->actor);
   check(actseqitr != _actorseq.end(), "Exception 2");
 
@@ -320,4 +336,64 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
       action {perms, rcpt, name("pbtxtransact"), args}.send();
     }
   }
+
+  if( nwitr->flags & PBTX_FLAG_HISTORY ) {
+    add_history(network_id, HISTORY_EVENT_EXECTRX, trx_input, worker);
+  }
+}
+
+
+
+void pbtx::add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t>  data, name rampayer)
+{
+  histid _histid(_self, 0);
+  auto iditr = _histid.find(network_id);
+  uint64_t id;
+  if( iditr == _histid.end() ) {
+    id = 1;
+    _histid.emplace(rampayer, [&]( auto& row ) {
+                                row.network_id = network_id;
+                                row.last_history_id = id;
+                              });
+  }
+  else {
+    id = iditr->last_history_id + 1;
+    _histid.modify(*iditr, rampayer, [&]( auto& row ) {
+                                       row.last_history_id = id;
+                                     });
+  }
+
+  auto trxsize = transaction_size();
+  char* trxbuf = (char*) malloc(trxsize);
+  uint32_t trxread = read_transaction( trxbuf, trxsize );
+  check( trxsize == trxread, "read_transaction failed");
+
+  history _history(_self, network_id);
+  _history.emplace(rampayer, [&]( auto& row ) {
+                               row.id = id;
+                               row.event_type = event_type;
+                               row.data = data;
+                               row.trx_id = sha256(trxbuf, trxsize);
+                               row.trx_time = current_time_point();
+                             });
+}
+
+
+ACTION pbtx::cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows)
+{
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+  require_auth(nwitr->admin_acc);
+
+  bool done_something = false;
+
+  history _history(_self, network_id);
+  auto histitr = _history.begin();
+  while( histitr != _history.end() && histitr->id <= upto_id && --maxrows >= 0 ) {
+    histitr = _history.erase(histitr);
+    done_something = true;
+  }
+
+  check(done_something, "Nothing to clean");
 }
