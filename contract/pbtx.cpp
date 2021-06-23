@@ -64,6 +64,34 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
 
 
 
+ACTION pbtx::netmetadata(uint64_t network_id, vector<uint8_t> metadata)
+{
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+  name admin_acc = nwitr->admin_acc;
+  require_auth(admin_acc);
+
+  netmd _md(_self, 0);
+  auto mditr = _md.find(network_id);
+  if( mditr == _md.end() ) {
+    _md.emplace(admin_acc, [&]( auto& row ) {
+                             row.network_id = network_id;
+                             row.data = metadata;
+                           });
+  }
+  else {
+    _md.modify(*mditr, admin_acc, [&]( auto& row ) {
+                                          row.data = metadata;
+                                  });
+  }
+
+  for(name rcpt: nwitr->listeners) {
+    require_recipient(rcpt);
+  }
+}
+
+
 ACTION pbtx::unregnetwork(uint64_t network_id)
 {
   networks _networks(_self, 0);

@@ -40,12 +40,20 @@ CONTRACT pbtx : public eosio::contract {
   const uint32_t PBTX_FLAG_RAW_NOTIFY = 1<<0;
 
 
+  // register a new network (requires addmin_acc authentication)
   ACTION regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags);
 
+  // supply the network metadata in Protobuf encoding
+  ACTION netmetadata(uint64_t network_id, vector<uint8_t> metadata);
+
+  // delete a network (requires all actors to be deleted first)
   ACTION unregnetwork(uint64_t network_id);
 
+  // add a new actor account to a network, specifying the credentials
+  // in Permission protobuf message
   ACTION regactor(uint64_t network_id, vector<uint8_t> permission);
 
+  // delete an actor from a network
   ACTION unregactor(uint64_t network_id, uint64_t actor);
 
   // execute the transaction
@@ -73,6 +81,14 @@ CONTRACT pbtx : public eosio::contract {
 
   typedef eosio::multi_index<name("networks"), networks_row> networks;
 
+
+  struct [[eosio::table("netmetadata")]] netmd_row {
+    uint64_t           network_id;
+    vector<uint8_t>    data;     // protobuf encoded metadata
+    auto primary_key()const { return network_id; }
+  };
+
+  typedef eosio::multi_index<name("netmetadata"), netmd_row> netmd;
 
   // actors registry. Scope=network_id
   struct [[eosio::table("actorperm")]] actorperm_row {
