@@ -60,9 +60,9 @@ action_result pbtx_api::unregactor(const account_name &signer, const uint64_t &n
     return push_action(signer, contract, N(unregactor), mvo()("network_id", network_id)("actor", actor));
 }
 
-action_result pbtx_api::exectrx(const account_name &signer, const vector<uint8_t> &trx_input)
+action_result pbtx_api::exectrx(const account_name &signer, const account_name &worker, const vector<uint8_t> &trx_input)
 {
-    return push_action(signer, contract, N(exectrx), mvo()("trx_input", trx_input));
+    return push_action(signer, contract, N(exectrx), mvo()("worker", worker)("trx_input", trx_input));
 }
 
 action_result pbtx_api::push_action(const name& signer, const name& cnt, const action_name& name, const variant_object& data) {

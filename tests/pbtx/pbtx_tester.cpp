@@ -19,10 +19,9 @@ void pbtx_tester::pbtx_init()
 
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1001, N(bob), {}, 0xFFFF0001));
 
-    // key keys{{get_public_key(N(alice), "active"), pbtx_KeyType_EOSIO_KEY, 1}};
-    // auto permisson = encode_permisson(string_to_uint64_t("alice"), 1, keys.size(), keys);
-
-    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson));
+    key keys{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permisson = encode_permisson(string_to_uint64_t("alice"), 1, keys.size(), keys);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson));
 }
 
 std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,

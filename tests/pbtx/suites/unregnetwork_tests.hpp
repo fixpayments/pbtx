@@ -12,7 +12,7 @@ try
                         m_pbtx_api.unregnetwork(N(bob), 666));
 
      BOOST_REQUIRE_EQUAL(wasm_assert_msg("Cannot delete a network while it has actors"),
-                        m_pbtx_api.unregnetwork(N(bob), 1000));
+                        m_pbtx_api.unregnetwork(N(bob), 1001));
 }
 FC_LOG_AND_RETHROW()
 
