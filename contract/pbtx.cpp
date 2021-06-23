@@ -37,11 +37,11 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
       require_recipient(rcpt);
     }
     _networks.emplace(admin_acc, [&]( auto& row ) {
-                                   row.network_id = network_id;
-                                   row.admin_acc = admin_acc;
-                                   row.listeners = listeners;
-                                   row.flags = flags;
-                                 });
+      row.network_id = network_id;
+      row.admin_acc = admin_acc;
+      row.listeners = listeners;
+      row.flags = flags;
+    });
   }
   else {
     if( nwitr->admin_acc != admin_acc ) {
@@ -56,10 +56,10 @@ ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listen
       require_recipient(rcpt);
     }
     _networks.modify(*nwitr, admin_acc, [&]( auto& row ) {
-                                          row.admin_acc = admin_acc;
-                                          row.listeners = listeners;
-                                          row.flags = flags;
-                                        });
+      row.admin_acc = admin_acc;
+      row.listeners = listeners;
+      row.flags = flags;
+    });
   }
 }
 
@@ -77,14 +77,14 @@ ACTION pbtx::netmetadata(uint64_t network_id, vector<uint8_t> metadata)
   auto mditr = _md.find(network_id);
   if( mditr == _md.end() ) {
     _md.emplace(admin_acc, [&]( auto& row ) {
-                             row.network_id = network_id;
-                             row.data = metadata;
-                           });
+      row.network_id = network_id;
+      row.data = metadata;
+    });
   }
   else {
     _md.modify(*mditr, admin_acc, [&]( auto& row ) {
-                                    row.data = metadata;
-                                  });
+      row.data = metadata;
+    });
   }
 
   for(name rcpt: nwitr->listeners) {
@@ -144,21 +144,21 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   auto actpermitr = _actorperm.find(perm->actor);
   if( actpermitr == _actorperm.end() ) {
     _actorperm.emplace(admin_acc, [&]( auto& row ) {
-                                    row.actor = perm->actor;
-                                    row.permission = permission;
-                                  });
+      row.actor = perm->actor;
+      row.permission = permission;
+    });
 
     actorseq _actorseq(_self, network_id);
     _actorseq.emplace(admin_acc, [&]( auto& row ) {
-                                   row.actor = perm->actor;
-                                   row.seqnum = 0;
-                                   row.prev_hash = 0;
-                                 });
+      row.actor = perm->actor;
+      row.seqnum = 0;
+      row.prev_hash = 0;
+    });
   }
   else {
     _actorperm.modify(*actpermitr, admin_acc, [&]( auto& row ) {
-                                                row.permission = permission;
-                                              });
+      row.permission = permission;
+    });
   }
 
   for(name rcpt: nwitr->listeners) {
@@ -301,10 +301,10 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
   }
 
   _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
-                                             row.seqnum++;
-                                             row.prev_hash = body_hash;
-                                             row.last_modified = current_time_point();
-                                           });
+    row.seqnum++;
+    row.prev_hash = body_hash;
+    row.last_modified = current_time_point();
+  });
 
   validate_signature(digest, actpermitr->permission, trx->signatures[0]);
   for( uint32_t i = 0; i < body->cosignors_count; i++ ) {
@@ -324,13 +324,13 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
   else {
     pbtxtransact_abi args =
       {
-       worker, body->actor, body->seqnum, {body->cosignors, body->cosignors + body->cosignors_count},
-       body->transaction_type,
-       {body->transaction_content.bytes, body->transaction_content.bytes + body->transaction_content.size}
+        worker, body->actor, body->seqnum, {body->cosignors, body->cosignors + body->cosignors_count},
+        body->transaction_type,
+        {body->transaction_content.bytes, body->transaction_content.bytes + body->transaction_content.size}
       };
 
     vector<permission_level> perms{permission_level{_self, name("active")},
-                                   permission_level{worker, name("active")}};
+      permission_level{worker, name("active")}};
 
     for(name rcpt: nwitr->listeners) {
       action {perms, rcpt, name("pbtxtransact"), args}.send();
@@ -352,15 +352,15 @@ void pbtx::add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t> 
   if( iditr == _histid.end() ) {
     id = 1;
     _histid.emplace(rampayer, [&]( auto& row ) {
-                                row.network_id = network_id;
-                                row.last_history_id = id;
-                              });
+      row.network_id = network_id;
+      row.last_history_id = id;
+    });
   }
   else {
     id = iditr->last_history_id + 1;
     _histid.modify(*iditr, rampayer, [&]( auto& row ) {
-                                       row.last_history_id = id;
-                                     });
+      row.last_history_id = id;
+    });
   }
 
   auto trxsize = transaction_size();
@@ -370,12 +370,12 @@ void pbtx::add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t> 
 
   history _history(_self, network_id);
   _history.emplace(rampayer, [&]( auto& row ) {
-                               row.id = id;
-                               row.event_type = event_type;
-                               row.data = data;
-                               row.trx_id = sha256(trxbuf, trxsize);
-                               row.trx_time = current_time_point();
-                             });
+    row.id = id;
+    row.event_type = event_type;
+    row.data = data;
+    row.trx_id = sha256(trxbuf, trxsize);
+    row.trx_time = current_time_point();
+  });
 }
 
 
