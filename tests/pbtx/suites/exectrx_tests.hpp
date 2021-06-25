@@ -8,8 +8,8 @@ try
     BOOST_REQUIRE_EQUAL(error("missing authority of bob"), 
                         m_pbtx_api.exectrx(N(alice), N(bob), {}));
 
-    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Empty transaction body"),
-    //                     m_pbtx_api.exectrx(N(alice), N(), {}));
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Empty transaction body"),
+                        m_pbtx_api.exectrx(N(bob), N(bob), {}));
 
     // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown network_id: "),
     //                     m_pbtx_api.exectrx(N(alice), N(), {}));
@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(exectrx_test, pbtx_tester)
 try
 {
 
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), {}));
+    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), {55, 55, 55, 55, 55}));
     
 }
 FC_LOG_AND_RETHROW()
