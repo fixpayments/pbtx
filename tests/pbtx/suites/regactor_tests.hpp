@@ -41,7 +41,7 @@ try
 }
 FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE(regactor_test, pbtx_tester)
+BOOST_FIXTURE_TEST_CASE(no_history_regactor_test, pbtx_tester)
 try
 {
     uint64_t network_id = 1000;
@@ -64,6 +64,53 @@ try
     ("seqnum", 0)
     ("prev_hash", 0)
     ("last_modified", "1970-01-01T00:00:00.000"));
+
+    auto history_id = m_pbtx_api.get_history_id(1000);
+    BOOST_REQUIRE_EQUAL(true, history_id.is_null());
+
+    auto history = m_pbtx_api.get_history(1000, 1);
+    BOOST_REQUIRE_EQUAL(true, history.is_null());
+}
+FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE(add_history_regactor_test, pbtx_tester)
+try
+{
+    uint64_t network_id = 998;
+    auto actor = string_to_uint64_t("alice");
+    key keys{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permission = encode_permisson(actor, 1, keys.size(), keys);
+  
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), network_id, permission));
+
+    auto actor_permission = m_pbtx_api.get_actor_permission(network_id, actor);
+
+    REQUIRE_MATCHING_OBJECT(actor_permission, mvo()
+    ("actor", actor)
+    ("permission", permission));
+
+    auto actor_sequence = m_pbtx_api.get_actor_sequence(network_id, actor);
+
+    REQUIRE_MATCHING_OBJECT(actor_sequence, mvo()
+    ("actor", actor)
+    ("seqnum", 0)
+    ("prev_hash", 0)
+    ("last_modified", "1970-01-01T00:00:00.000"));
+
+    auto history_id = m_pbtx_api.get_history_id(998);
+
+    REQUIRE_MATCHING_OBJECT(history_id, mvo()
+    ("network_id", 998)
+    ("last_history_id", 1));
+
+    auto history = m_pbtx_api.get_history(998, history_id["last_history_id"].as_uint64());
+
+    REQUIRE_MATCHING_OBJECT(history, mvo()
+    ("id", history_id["last_history_id"].as_uint64())
+    ("event_type", PBTX_HISTORY_EVENT_REGACTOR)
+    ("data", permission)
+    ("trx_id", "3766c444abe4d313ec6240df8d2795a52814d8a365c4d3efd6bfc0918a7795b7")
+    ("trx_time", "2020-01-01T00:00:07.000"));
 }
 FC_LOG_AND_RETHROW()
 

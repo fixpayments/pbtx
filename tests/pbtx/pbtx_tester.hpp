@@ -2,6 +2,7 @@
 #include "contracts.hpp"
 #include "pbtx_api.hpp"
 #include "pbtx.pb.h"
+#include "pbtx_contract_constants.hpp"
 #include <pb_encode.h>
 #include <pb_decode.h>
 #include <boost/test/unit_test.hpp>

@@ -45,6 +45,7 @@ ${NANOPB_INCLUDE_DIRS}
 ${CMAKE_BINARY_DIR}
 ${CMAKE_BINARY_DIR}/../contract
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/../contract
 )
 
 # find all unit test suites
@@ -56,6 +57,7 @@ file(GLOB PBTX_UNIT_TESTS
 "./../nanopb/pb_encode.c"
 "./../nanopb/pb_decode.c"
 ${CMAKE_BINARY_DIR}/../contract/pbtx.pb.c
+${CMAKE_CURRENT_SOURCE_DIR}/../contract/pbtx_contract_constants.hpp
 )
 
 add_eosio_test_executable(pbtx_unit_test ${PBTX_UNIT_TESTS}) # build unit tests as one executable

@@ -16,16 +16,31 @@ try
 }
 FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE(cleanhistory_test, pbtx_tester)
+BOOST_FIXTURE_TEST_CASE(partial_cleanhistory_test, pbtx_tester)
 try
 {
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.netmetadata(N(bob), 1000, {55, 55 , 55, 55, 55}));
-    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.cleanhistory(N(bob), 1000, 10, 10));
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.netmetadata(N(bob), 999, {55, 55 , 55, 55, 55}));
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.cleanhistory(N(bob), 999, 1, 1));
 
-    // auto history = m_pbtx_api.get_history(1000, 1);
+    auto history = m_pbtx_api.get_history(999, 2);
 
-    // std::cout << history << std::endl;
-    // BOOST_REQUIRE_EQUAL(true, history.is_null());
+    REQUIRE_MATCHING_OBJECT(history, mvo()
+    ("id", 2)
+    ("event_type", PBTX_HISTORY_EVENT_NETMETADATA)
+    ("data", std::vector<uint8_t>{55, 55 , 55, 55, 55})
+    ("trx_id", "737fcaaddf5a1f066cf50caed7d7f5121b575b6507935e92492fbf78759a1c88")
+    ("trx_time", "2020-01-01T00:00:07.000"));
+}
+FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE(full_cleanhistory_test, pbtx_tester)
+try
+{
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.netmetadata(N(bob), 999, {55, 55 , 55, 55, 55}));
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.cleanhistory(N(bob), 999, 10, 10));
+
+    auto history = m_pbtx_api.get_history(999, 1);
+    BOOST_REQUIRE_EQUAL(true, history.is_null());
 }
 FC_LOG_AND_RETHROW()
 

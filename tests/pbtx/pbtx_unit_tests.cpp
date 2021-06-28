@@ -1,6 +1,6 @@
 #include "cleanhistory_tests.hpp"
-#include "exectrx_tests.hpp"
-#include "newmetadata_tests.hpp"
+#include "exectrx_tests.hpp"    
+#include "netmetadata_tests.hpp"
 #include "regactor_tests.hpp"
 #include "regnetwork_tests.hpp"
 #include "unregactor_tests.hpp"

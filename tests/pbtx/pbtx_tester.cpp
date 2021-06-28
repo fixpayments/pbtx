@@ -15,13 +15,23 @@ pbtx_tester::pbtx_tester()
 void pbtx_tester::pbtx_init()
 {
     //Predefined networks
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 998, N(bob), {}, 0xFFFF0002));
+
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 999, N(bob), {}, 0xFFFF0002));
+
+    key keys1{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permisson1 = encode_permisson(string_to_uint64_t("alice"), 1, keys1.size(), keys1);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 999, permisson1));
+
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1000, N(bob), {}, 0xFFFF0001));
 
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1001, N(bob), {}, 0xFFFF0001));
 
-    key keys{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
-    auto permisson = encode_permisson(string_to_uint64_t("alice"), 1, keys.size(), keys);
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson));
+
+
+    key keys2{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    auto permisson2 = encode_permisson(string_to_uint64_t("alice"), 1, keys2.size(), keys2);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson2));
 }
 
 std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
