@@ -65,17 +65,99 @@ std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
 
     if (!status)
     {
-        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+        printf("Permission encoding failed: %s\n", PB_GET_ERROR(&stream));
         exit(EXIT_FAILURE);
     }
 
     return buffer;
 }
 
-std::vector<uint8_t> pbtx_tester::encode_transaction()
+std::vector<uint8_t> pbtx_tester::encode_signature(const pbtx_KeyType &type, const pb_size_t &sig_bytes_count, const std::vector<char> &sig_bytes)
 {
+    _pbtx_Signature signature = pbtx_Signature_init_default;
 
-    return std::vector<uint8_t>();
+    signature.type = type;
+    signature.sig_bytes_count = sig_bytes_count;
+    signature.sig_bytes->size = sig_bytes.size();
+    memcpy(signature.sig_bytes->bytes, &sig_bytes[0], sig_bytes.size());
+
+    std::vector<uint8_t> buffer(pbtx_Signature_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
+    auto status = pb_encode(&stream, pbtx_Signature_fields, &signature);
+    buffer.resize(stream.bytes_written);
+
+    if (!status)
+    {
+        printf("Signature encoding failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
+
+    return buffer;
+}
+
+std::vector<uint8_t> pbtx_tester::encode_transaction_body(const uint64_t &network_id, const uint64_t &actor,
+                                                          const pb_size_t &cosignors_count, const std::vector<uint64_t> &cosignors,
+                                                          const uint32_t &seqnum, const uint64_t &prev_hash, const uint32_t &transaction_type,
+                                                          const std::vector<char> &transaction_content)
+{
+    _pbtx_TransactionBody trx_body = pbtx_TransactionBody_init_default;
+
+    trx_body.network_id = network_id;
+    trx_body.actor = actor;
+    trx_body.cosignors_count = cosignors_count;
+    memcpy(trx_body.cosignors, &cosignors[0], cosignors.size());
+    trx_body.seqnum = seqnum;
+    trx_body.prev_hash = prev_hash;
+    trx_body.transaction_type = transaction_type;
+    trx_body.transaction_content.size = transaction_content.size();
+    memcpy(trx_body.transaction_content.bytes, &transaction_content[0], transaction_content.size());
+
+    std::vector<uint8_t> buffer(pbtx_TransactionBody_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
+    auto status = pb_encode(&stream, pbtx_TransactionBody_fields, &trx_body);
+    buffer.resize(stream.bytes_written);
+
+    if (!status)
+    {
+        printf("Transaction body encoding failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
+
+    return buffer;
+}
+
+std::vector<uint8_t> pbtx_tester::encode_transaction(const std::vector<uint8_t> &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures)
+{
+    _pbtx_Transaction transaction = pbtx_Transaction_init_default;
+
+    transaction.body.size = encoded_trx_body.size();
+    memcpy(transaction.body.bytes, &encoded_trx_body[0], encoded_trx_body.size());
+    transaction.signatures_count = signatures_count;
+
+    auto i = 0;
+
+    for (const auto &[signature, type, sig_bytes_count] : signatures)
+    {
+        transaction.signatures[i].type = type;
+        transaction.signatures[i].sig_bytes_count = sig_bytes_count;
+        transaction.signatures[i].sig_bytes->size = signature.size();
+        memcpy(transaction.signatures[i].sig_bytes->bytes , &signature[0], signature.size());
+
+        i++;
+    }
+
+    std::vector<uint8_t> buffer(pbtx_Transaction_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
+    auto status = pb_encode(&stream, pbtx_Transaction_fields, &transaction);
+    buffer.resize(stream.bytes_written);
+
+    if (!status)
+    {
+        printf("Transaction encoding failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
+
+    return buffer;
 }
 
 void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)
@@ -88,7 +170,7 @@ void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)
 
     if (!status)
     {
-        printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+        printf("Decoding permisson failed: %s\n", PB_GET_ERROR(&stream));
         exit(EXIT_FAILURE);
     }
 
@@ -106,8 +188,55 @@ void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)
     }
 }
 
-void pbtx_tester::decode_transaction(const std::vector<uint8_t> &buffer)
+void pbtx_tester::decode_signature(const std::vector<uint8_t> &buffer)
 {
+    _pbtx_Signature signature = pbtx_Signature_init_default;
 
+    pb_istream_t stream = pb_istream_from_buffer(buffer.data(), buffer.size());
+
+    auto status = pb_decode(&stream, pbtx_Signature_fields, &signature);
+
+    if (!status)
+    {
+        printf("Decoding signature failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
+}
+	
+void pbtx_tester::decode_transaction_body(const std::vector<uint8_t> &buffer)
+{
+    _pbtx_TransactionBody trx_body = pbtx_TransactionBody_init_default;
+
+    pb_istream_t stream = pb_istream_from_buffer(buffer.data(), buffer.size());
+
+    auto status = pb_decode(&stream, pbtx_TransactionBody_fields, &trx_body);
+
+    if (!status)
+    {
+        printf("Decoding transaction body failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
 }
 
+void pbtx_tester::decode_transaction(const std::vector<uint8_t> &buffer)
+{
+    _pbtx_Transaction transaction = pbtx_Transaction_init_default;
+
+    pb_istream_t stream = pb_istream_from_buffer(buffer.data(), buffer.size());
+
+    auto status = pb_decode(&stream, pbtx_Transaction_fields, &transaction);
+
+    if (!status)
+    {
+        printf("Decoding transaction failed: %s\n", PB_GET_ERROR(&stream));
+        exit(EXIT_FAILURE);
+    }
+}
+
+std::vector<char> pbtx_tester::to_signature(const std::vector<uint8_t> &trx_body,
+                                            const fc::crypto::private_key &prv_key)
+{
+    auto sha256 = fc::sha256::hash(trx_body);
+    auto signature = prv_key.sign(sha256, false);
+    return fc::raw::pack(signature);
+}

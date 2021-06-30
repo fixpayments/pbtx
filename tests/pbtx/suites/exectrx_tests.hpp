@@ -44,9 +44,11 @@ FC_LOG_AND_RETHROW()
 BOOST_FIXTURE_TEST_CASE(exectrx_test, pbtx_tester)
 try
 {
-
-    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), {55, 55, 55, 55, 55}));
-    
+    auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
+    auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+    signature signatures{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())};
+    auto trx = encode_transaction(encoded_trx_body, 1, signatures);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
 
