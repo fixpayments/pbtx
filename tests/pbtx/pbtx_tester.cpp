@@ -126,7 +126,7 @@ std::vector<uint8_t> pbtx_tester::encode_transaction_body(const uint64_t &networ
     return buffer;
 }
 
-std::vector<uint8_t> pbtx_tester::encode_transaction(const std::vector<uint8_t> &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures)
+std::tuple<bool, std::vector<uint8_t>> pbtx_tester::encode_transaction(const std::vector<uint8_t> &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures)
 {
     _pbtx_Transaction transaction = pbtx_Transaction_init_default;
 
@@ -135,13 +135,20 @@ std::vector<uint8_t> pbtx_tester::encode_transaction(const std::vector<uint8_t> 
     transaction.signatures_count = signatures_count;
 
     auto i = 0;
-
-    for (const auto &[signature, type, sig_bytes_count] : signatures)
+    for (const auto &signature : signatures)
     {
+        auto [sig, type, sig_bytes_count] = signature[i];
         transaction.signatures[i].type = type;
         transaction.signatures[i].sig_bytes_count = sig_bytes_count;
-        transaction.signatures[i].sig_bytes->size = signature.size();
-        memcpy(transaction.signatures[i].sig_bytes->bytes , &signature[0], signature.size());
+
+        auto j = 0;
+        for (const auto &ecc_sig : signature)
+        {
+            auto bytes = std::get<0>(ecc_sig);
+            transaction.signatures[i].sig_bytes[j].size = bytes.size();
+            memcpy(transaction.signatures[i].sig_bytes[j].bytes , &bytes[0], bytes.size());
+            j++;
+        }
 
         i++;
     }
@@ -154,10 +161,10 @@ std::vector<uint8_t> pbtx_tester::encode_transaction(const std::vector<uint8_t> 
     if (!status)
     {
         printf("Transaction encoding failed: %s\n", PB_GET_ERROR(&stream));
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
-    return buffer;
+    return std::make_tuple(status,buffer);
 }
 
 void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)

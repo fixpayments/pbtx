@@ -16,7 +16,7 @@ using namespace std;
 
 using mvo = fc::mutable_variant_object;
 using key = std::vector<std::tuple<std::vector<char>, pbtx_KeyType, uint32_t>>;
-using signature = std::vector<std::tuple<std::vector<char>, pbtx_KeyType, pb_size_t>>;
+using signature = std::vector<std::vector<std::tuple<std::vector<char>, pbtx_KeyType, pb_size_t>>>;
 
 class pbtx_tester : public tester {
 protected:
@@ -35,7 +35,7 @@ public:
 												 const uint32_t &seqnum, const uint64_t &prev_hash, const uint32_t &transaction_type,
 												 const std::vector<char> &transaction_content);
 
-	std::vector<uint8_t> encode_transaction(const std::vector<uint8_t>  &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures);
+	std::tuple<bool, std::vector<uint8_t>> encode_transaction(const std::vector<uint8_t>  &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures);
 
 	void decode_permisson(const std::vector<uint8_t> &buffer);
 	void decode_signature(const std::vector<uint8_t> &buffer);
