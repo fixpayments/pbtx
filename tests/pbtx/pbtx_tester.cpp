@@ -178,18 +178,23 @@ void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)
         printf("Decoding permisson failed: %s\n", PB_GET_ERROR(&stream));
         exit(EXIT_FAILURE);
     }
-
+    
     printf("Actor: %lu\n", permisson.actor);
     printf("Threshold: %u\n", permisson.threshold);
     printf("Keys count: %u\n", permisson.keys_count);
 
-    for (auto i = 0; i <= permisson.keys_count; i++)
+    for (auto i = 0; i < permisson.keys_count; i++)
     {
         printf("Has key: %d\n", permisson.keys[0].has_key);
         printf("Key type: %u\n", permisson.keys[0].key.type);
         printf("Key weight: %u\n", permisson.keys[0].weight);
         printf("Key size: %u\n", permisson.keys[0].key.key_bytes.size);
-        printf("Key bytes: %s\n", permisson.keys[0].key.key_bytes.bytes);
+
+        printf("Key bytes: ");
+        for(auto j = 0; j < permisson.keys[0].key.key_bytes.size; j++)
+        {
+            printf("%02hhx", permisson.keys[0].key.key_bytes.bytes[j]);
+        }
     }
 }
 

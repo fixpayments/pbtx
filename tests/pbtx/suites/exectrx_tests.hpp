@@ -121,8 +121,8 @@ try
     signature signatures{{std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
     auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
     BOOST_REQUIRE_EQUAL(true, status);
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
-                        m_pbtx_api.exectrx(N(bob), N(bob), trx));
+    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
+    //                     m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
 
@@ -143,7 +143,7 @@ try
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
 
 
-    std::cout << ">>>>>>>>>>>>ENCODING<<<<<<<<<<<<<" << std::endl;
+    std::cout << "\n>>>>>>>>>>>>ENCODING<<<<<<<<<<<<<" << std::endl;
     std::cout << "Size:" << alice_sig.size() << std::endl;
 
     auto m_sha256 = fc::sha256::hash(encoded_trx_body);
@@ -160,10 +160,7 @@ try
     for (auto& el : alice_sig)
         printf("%02hhx", el);
 
-
-    std::cout << std::endl;    
-
-    std::cout << ">>>>>>>>>>>>DECODING<<<<<<<<<<<<<" << std::endl;
+    std::cout << "\n>>>>>>>>>>>>DECODING<<<<<<<<<<<<<" << std::endl;
 
     auto [status,trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
 
@@ -177,7 +174,21 @@ try
 
     decode_transaction(trx);
 
-    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
+    auto actor_permission = m_pbtx_api.get_actor_permission(1001, string_to_uint64_t("alice"));
+    std::vector<uint8_t> vec;
+    from_variant(actor_permission["permission"].get_array(), vec);
+
+    std::cout << ">>>Permission<<<" << std::endl;
+
+    decode_permisson(vec);
+
+    auto pub_key = fc::raw::pack(get_public_key(N(alice), "active"));
+
+    std::cout << "\nDecoded public key: ";
+    for (auto& el : pub_key)
+        printf("%02hhx", el);
+    std::cout << std::endl;
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
 
     //@TODO add check history
 }
