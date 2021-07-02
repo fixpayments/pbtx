@@ -236,6 +236,27 @@ void pbtx_tester::decode_transaction(const std::vector<uint8_t> &buffer)
         printf("Decoding transaction failed: %s\n", PB_GET_ERROR(&stream));
         exit(EXIT_FAILURE);
     }
+
+    printf("Signatures count: %u\n", transaction.signatures_count);
+
+    for (auto i = 0; i < transaction.signatures_count; i++)
+    {
+        printf("Signatures type: %u\n", transaction.signatures[i].type);
+        printf("Signatures byte buffers count: %u\n", transaction.signatures[i].sig_bytes_count);
+
+        for(auto j = 0; j < transaction.signatures[i].sig_bytes_count; j++)
+        {
+            printf("Signatures byte buffer size: %u\n", transaction.signatures[i].sig_bytes[j].size);
+
+            printf("Signatures byte buffer bytes: ");
+            for(auto k = 0; k < transaction.signatures[i].sig_bytes[j].size; k++)
+            {
+                printf("%02hhx", transaction.signatures[i].sig_bytes[j].bytes[k]);
+            }
+            printf("\n");
+        }
+       
+    }
 }
 
 std::vector<char> pbtx_tester::to_signature(const std::vector<uint8_t> &trx_body,

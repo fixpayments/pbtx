@@ -139,12 +139,45 @@ try
 {
     //@TODO fix
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
+
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+
+
+    std::cout << ">>>>>>>>>>>>ENCODING<<<<<<<<<<<<<" << std::endl;
+    std::cout << "Size:" << alice_sig.size() << std::endl;
+
+    auto m_sha256 = fc::sha256::hash(encoded_trx_body);
+    auto m_signature =get_private_key(N(alice), "active").sign(m_sha256, false);
+
+    std::cout << "Public key: " << get_public_key(N(alice), "active").to_string() << std::endl;
+    std::cout << "Private key: " << get_private_key(N(alice), "active").to_string() << std::endl;
+    std::cout << "Signature : " << m_signature.to_string() << std::endl;
+    std::cout << "Recovery key: " << fc::crypto::public_key(m_signature, m_sha256, false).to_string() << std::endl;
+
     signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    std::cout << "Signature Size:" << alice_sig.size() << std::endl;
+    std::cout << "Signature : ";
+    for (auto& el : alice_sig)
+        printf("%02hhx", el);
+
+
+    std::cout << std::endl;    
+
+    std::cout << ">>>>>>>>>>>>DECODING<<<<<<<<<<<<<" << std::endl;
+
     auto [status,trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+
     BOOST_REQUIRE_EQUAL(true, status);
 
-    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
+    std::cout << "Encoded trx(hex): ";
+    for (auto& el : trx)
+        printf("%02hhx", el);
+    std::cout << std::endl;
+
+
+    decode_transaction(trx);
+
+    // BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
 
     //@TODO add check history
 }
