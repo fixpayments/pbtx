@@ -27,8 +27,6 @@ void pbtx_tester::pbtx_init()
 
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 1001, N(bob), {}, 0xFFFF0001));
 
-
-
     key keys2{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permisson2 = encode_permisson(string_to_uint64_t("alice"), 1, keys2.size(), keys2);
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson2));
@@ -139,7 +137,7 @@ std::tuple<bool, std::vector<uint8_t>> pbtx_tester::encode_transaction(const std
     {
         auto [sig, type, sig_bytes_count] = signature[i];
         transaction.signatures[i].type = type;
-        transaction.signatures[i].sig_bytes_count = sig_bytes_count;
+        transaction.signatures[i].sig_bytes_count = signatures.size();
 
         auto j = 0;
         for (const auto &ecc_sig : signature)
