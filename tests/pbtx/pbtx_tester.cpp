@@ -9,7 +9,8 @@ pbtx_tester::pbtx_tester()
                      N(bob),
                      N(carol),
                      N(msiguser1),
-                     N(msiguser2)});
+                     N(msiguser2),
+                     N(msiguser3)});
 
     pbtx_init();
 }
@@ -36,11 +37,11 @@ void pbtx_tester::pbtx_init()
     //Multisig cosignors network
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 2001, N(bob), {}, 0xFFFF0001));
 
-    key keys3{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1},
-              {fc::raw::pack(get_public_key(N(msiguser1), "active")), pbtx_KeyType_EOSIO_KEY, 1},
-              {fc::raw::pack(get_public_key(N(msiguser2), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+    key keys3{{fc::raw::pack(get_public_key(N(msiguser1), "active")), pbtx_KeyType_EOSIO_KEY, 1},
+              {fc::raw::pack(get_public_key(N(msiguser2), "active")), pbtx_KeyType_EOSIO_KEY, 1},
+              {fc::raw::pack(get_public_key(N(msiguser3), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
 
-    auto permisson3 = encode_permisson(string_to_uint64_t("alice"), 3, keys3.size(), keys3);
+    auto permisson3 = encode_permisson(string_to_uint64_t("msiguser1"), 3, keys3.size(), keys3);
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 2001, permisson3));
 }
 
