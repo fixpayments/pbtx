@@ -28,8 +28,8 @@ try
     ("id", 2)
     ("event_type", PBTX_HISTORY_EVENT_NETMETADATA)
     ("data", std::vector<uint8_t>{55, 55 , 55, 55, 55})
-    ("trx_id", "737fcaaddf5a1f066cf50caed7d7f5121b575b6507935e92492fbf78759a1c88")
-    ("trx_time", "2020-01-01T00:00:07.000"));
+    ("trx_id", "8401c1e50b10cad3c20a541a971a6647eac7c012d19ee659ebdc7fed7ff42c11")
+    ("trx_time", "2020-01-01T00:00:08.000"));
 }
 FC_LOG_AND_RETHROW()
 

@@ -109,8 +109,8 @@ try
     ("id", history_id["last_history_id"].as_uint64())
     ("event_type", PBTX_HISTORY_EVENT_REGACTOR)
     ("data", permission)
-    ("trx_id", "3766c444abe4d313ec6240df8d2795a52814d8a365c4d3efd6bfc0918a7795b7")
-    ("trx_time", "2020-01-01T00:00:07.000"));
+    ("trx_id", "b4d51be67a6e9986b856fbcad5e714ddbf961d9b249bc97f60f6329b919d70b1")
+    ("trx_time", "2020-01-01T00:00:08.000"));
 }
 FC_LOG_AND_RETHROW()
 

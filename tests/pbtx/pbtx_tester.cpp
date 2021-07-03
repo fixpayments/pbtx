@@ -7,7 +7,9 @@ pbtx_tester::pbtx_tester()
 
     create_accounts({N(alice),
                      N(bob),
-                     N(carol)});
+                     N(carol),
+                     N(msiguser1),
+                     N(msiguser2)});
 
     pbtx_init();
 }
@@ -30,6 +32,16 @@ void pbtx_tester::pbtx_init()
     key keys2{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
     auto permisson2 = encode_permisson(string_to_uint64_t("alice"), 1, keys2.size(), keys2);
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson2));
+
+    //Multisig cosignors network
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 2001, N(bob), {}, 0xFFFF0001));
+
+    key keys3{{fc::raw::pack(get_public_key(N(alice), "active")), pbtx_KeyType_EOSIO_KEY, 1},
+              {fc::raw::pack(get_public_key(N(msiguser1), "active")), pbtx_KeyType_EOSIO_KEY, 1},
+              {fc::raw::pack(get_public_key(N(msiguser2), "active")), pbtx_KeyType_EOSIO_KEY, 1}};
+
+    auto permisson3 = encode_permisson(string_to_uint64_t("alice"), 3, keys3.size(), keys3);
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 2001, permisson3));
 }
 
 std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
@@ -267,7 +279,7 @@ void pbtx_tester::decode_transaction(const std::vector<uint8_t> &buffer)
 std::vector<char> pbtx_tester::to_signature(const std::vector<uint8_t> &trx_body,
                                             const fc::crypto::private_key &prv_key)
 {
-    auto sha256 = fc::sha256::hash(trx_body);
+    auto sha256 = fc::sha256::hash((const char*)trx_body.data(), trx_body.size());
     auto signature = prv_key.sign(sha256, false);
     return fc::raw::pack(signature);
 }

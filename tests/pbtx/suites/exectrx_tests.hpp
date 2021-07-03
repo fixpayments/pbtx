@@ -86,16 +86,15 @@ FC_LOG_AND_RETHROW()
 BOOST_FIXTURE_TEST_CASE(unknown_cosignor_exectrx_test, pbtx_tester)
 try
 {
-    //@TODO fix
-    // auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 1, {string_to_uint64_t("carol")}, 1, 0, 0, {33});
-    // auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    // auto carol_sig = to_signature(encoded_trx_body, get_private_key(N(carol), "active"));
-    // signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size()), std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
+    auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 1, {string_to_uint64_t("carol")}, 1, 0, 0, {33});
+    auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+    auto carol_sig = to_signature(encoded_trx_body, get_private_key(N(carol), "active"));
+    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size()), std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
 
-    // auto [status, trx] = encode_transaction(encoded_trx_body, 2, signatures);
-    // BOOST_REQUIRE_EQUAL(true, status);
-    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown cosignor #0"),
-    //                     m_pbtx_api.exectrx(N(bob), N(bob), trx));
+    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.data()->size(), signatures);
+    BOOST_REQUIRE_EQUAL(true, status);
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown cosignor #0: 0"),
+                        m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
 
@@ -121,77 +120,96 @@ try
     signature signatures{{std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
     auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
     BOOST_REQUIRE_EQUAL(true, status);
-    // BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
-    //                     m_pbtx_api.exectrx(N(bob), N(bob), trx));
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
+                        m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
 
-// BOOST_FIXTURE_TEST_CASE(insufficient_sig_weight_exectrx_test, pbtx_tester)
-// try
-// {
-// BOOST_REQUIRE_EQUAL(wasm_assert_msg("Insufficient signatures weight for actor #0"),
-//                     m_pbtx_api.exectrx(N(alice), N(), {}));
-// }
-// FC_LOG_AND_RETHROW()
+BOOST_FIXTURE_TEST_CASE(insufficient_sig_weight_exectrx_test, pbtx_tester)
+try
+{
+    auto encoded_trx_body = encode_transaction_body(2001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
+    auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    BOOST_REQUIRE_EQUAL(true, status);
+
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Insufficient signatures weight for actor #" + std::to_string(string_to_uint64_t("alice"))),
+                       m_pbtx_api.exectrx(N(bob), N(bob), trx));
+}
+FC_LOG_AND_RETHROW()
 
 BOOST_FIXTURE_TEST_CASE(exectrx_test, pbtx_tester)
 try
 {
-    //@TODO fix
-    auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
-
+    auto encoded_trx_body = encode_transaction_body(999, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
 
-
-    std::cout << "\n>>>>>>>>>>>>ENCODING<<<<<<<<<<<<<" << std::endl;
-    std::cout << "Size:" << alice_sig.size() << std::endl;
-
-    auto m_sha256 = fc::sha256::hash(encoded_trx_body);
-    auto m_signature =get_private_key(N(alice), "active").sign(m_sha256, false);
-
-    std::cout << "Public key: " << get_public_key(N(alice), "active").to_string() << std::endl;
-    std::cout << "Private key: " << get_private_key(N(alice), "active").to_string() << std::endl;
-    std::cout << "Signature : " << m_signature.to_string() << std::endl;
-    std::cout << "Recovery key: " << fc::crypto::public_key(m_signature, m_sha256, false).to_string() << std::endl;
-
     signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    std::cout << "Signature Size:" << alice_sig.size() << std::endl;
-    std::cout << "Signature : ";
-    for (auto& el : alice_sig)
-        printf("%02hhx", el);
-
-    std::cout << "\n>>>>>>>>>>>>DECODING<<<<<<<<<<<<<" << std::endl;
 
     auto [status,trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
 
     BOOST_REQUIRE_EQUAL(true, status);
 
-    std::cout << "Encoded trx(hex): ";
-    for (auto& el : trx)
-        printf("%02hhx", el);
-    std::cout << std::endl;
-
-
-    decode_transaction(trx);
-
-    auto actor_permission = m_pbtx_api.get_actor_permission(1001, string_to_uint64_t("alice"));
-    std::vector<uint8_t> vec;
-    from_variant(actor_permission["permission"].get_array(), vec);
-
-    std::cout << ">>>Permission<<<" << std::endl;
-
-    decode_permisson(vec);
-
-    auto pub_key = fc::raw::pack(get_public_key(N(alice), "active"));
-
-    std::cout << "\nDecoded public key: ";
-    for (auto& el : pub_key)
-        printf("%02hhx", el);
-    std::cout << std::endl;
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
 
-    //@TODO add check history
+    auto history_id = m_pbtx_api.get_history_id(999);
+
+    REQUIRE_MATCHING_OBJECT(history_id, mvo()
+    ("network_id", 999)
+    ("last_history_id", 2));
+
+    auto history = m_pbtx_api.get_history(999, history_id["last_history_id"].as_uint64());
+
+    REQUIRE_MATCHING_OBJECT(history, mvo()
+    ("id", history_id["last_history_id"].as_uint64())
+    ("event_type", PBTX_HISTORY_EVENT_EXECTRX)
+    ("data", trx)
+    ("trx_id", "8f64aa65e85f38fb3fd045282ef2c5d8a8e272e4c12aa2ac997c69c0b7297ae3")
+    ("trx_time", "2020-01-01T00:00:08.000"));
 }
 FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE(multisig_cosignors_exectrx_test, pbtx_tester)
+try
+{
+    std::vector<uint64_t> cosignors{string_to_uint64_t("msiguser1"), string_to_uint64_t("msiguser2")};
+    auto encoded_trx_body = encode_transaction_body(2001, string_to_uint64_t("alice"), cosignors.size(), cosignors, 1, 0, 0, {33});
+    auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+    auto msiguser1_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser1), "active"));
+    auto msiguser2_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser2), "active"));
+
+    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size()),
+                          std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size()),
+                          std::make_tuple(msiguser2_sig, pbtx_KeyType_EOSIO_KEY, msiguser2_sig.size())}};
+
+    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.data()->size(), signatures);
+    BOOST_REQUIRE_EQUAL(true, status);
+
+    BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
+
+}
+FC_LOG_AND_RETHROW()
+
+// BOOST_FIXTURE_TEST_CASE(multisig_exectrx_test, pbtx_tester)
+// try
+// {
+//     std::vector<uint64_t> cosignors{string_to_uint64_t("msiguser1"), string_to_uint64_t("msiguser2")};
+//     auto encoded_trx_body = encode_transaction_body(2001, string_to_uint64_t("alice"), cosignors.size(), cosignors, 1, 0, 0, {33});
+//     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
+//     auto msiguser1_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser1), "active"));
+//     auto msiguser2_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser2), "active"));
+
+//     signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())},
+//                          {std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size())},
+//                          {std::make_tuple(msiguser2_sig, pbtx_KeyType_EOSIO_KEY, msiguser2_sig.size())}};
+
+//     auto [status, trx] = encode_transaction(encoded_trx_body, signatures.data()->size(), signatures);
+//     BOOST_REQUIRE_EQUAL(true, status);
+
+//     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));
+
+// }
+// FC_LOG_AND_RETHROW()
 
 BOOST_AUTO_TEST_SUITE_END()
