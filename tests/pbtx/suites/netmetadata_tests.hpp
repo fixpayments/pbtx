@@ -66,7 +66,7 @@ try
     ("id", history_id["last_history_id"].as_uint64())
     ("event_type", PBTX_HISTORY_EVENT_NETMETADATA)
     ("data", data)
-    ("trx_id", "f84a2bc6da261d0fb9a52429538c129f651e04844785589ecb17c22b8181c4a0")
+    ("trx_id", "64151aa8e7464146642d557ce44f1f1723a10f1ef9fd15d21eb3c53fd275bab2")
     ("trx_time", "2020-01-01T00:00:08.000"));
 }
 FC_LOG_AND_RETHROW()

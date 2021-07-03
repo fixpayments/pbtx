@@ -60,7 +60,7 @@ try
     ("id", history_id["last_history_id"].as_uint64())
     ("event_type", PBTX_HISTORY_EVENT_UNREGACTOR)
     ("data", permission["permission"].get_array())
-    ("trx_id", "63631063c1c024b67726cbc4a9434e3e0ccf277c3c60bb68ee706e079917d5c7")
+    ("trx_id", "6321fb362c618437dfb3785ce44c9dfcfbcd033834bb41f4ce77ae8ca3951cc7")
     ("trx_time", "2020-01-01T00:00:08.000"));
 }
 FC_LOG_AND_RETHROW()

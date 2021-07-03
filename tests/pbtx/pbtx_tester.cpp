@@ -34,7 +34,7 @@ void pbtx_tester::pbtx_init()
     auto permisson2 = encode_permisson(string_to_uint64_t("alice"), 1, keys2.size(), keys2);
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regactor(N(bob), 1001, permisson2));
 
-    //Multisig cosignors network
+    //Multisig network
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.regnetwork(N(bob), 2001, N(bob), {}, 0xFFFF0001));
 
     key keys3{{fc::raw::pack(get_public_key(N(msiguser1), "active")), pbtx_KeyType_EOSIO_KEY, 1},
@@ -150,7 +150,7 @@ std::tuple<bool, std::vector<uint8_t>> pbtx_tester::encode_transaction(const std
     {
         auto [sig, type, sig_bytes_count] = signature[i];
         transaction.signatures[i].type = type;
-        transaction.signatures[i].sig_bytes_count = signatures.size();
+        transaction.signatures[i].sig_bytes_count = signature.size();
 
         auto j = 0;
         for (const auto &ecc_sig : signature)
