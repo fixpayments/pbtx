@@ -83,23 +83,23 @@ std::vector<uint8_t> pbtx_tester::encode_permisson(const uint64_t &actor,
     return buffer;
 }
 
-std::vector<uint8_t> pbtx_tester::encode_signature(const pbtx_KeyType &type, const pb_size_t &sig_bytes_count, const std::vector<char> &sig_bytes)
+std::vector<uint8_t> pbtx_tester::encode_signature(const pbtx_KeyType &type, const pb_size_t &sigs_count, const std::vector<char> &sigs)
 {
-    _pbtx_Signature signature = pbtx_Signature_init_default;
+    _pbtx_Authority signature = pbtx_Authority_init_default;
 
     signature.type = type;
-    signature.sig_bytes_count = sig_bytes_count;
-    signature.sig_bytes->size = sig_bytes.size();
-    memcpy(signature.sig_bytes->bytes, &sig_bytes[0], sig_bytes.size());
+    signature.sigs_count = sigs_count;
+    signature.sigs->size = sigs.size();
+    memcpy(signature.sigs->bytes, &sigs[0], sigs.size());
 
-    std::vector<uint8_t> buffer(pbtx_Signature_size);
+    std::vector<uint8_t> buffer(pbtx_Authority_size);
     pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
-    auto status = pb_encode(&stream, pbtx_Signature_fields, &signature);
+    auto status = pb_encode(&stream, pbtx_Authority_fields, &signature);
     buffer.resize(stream.bytes_written);
 
     if (!status)
     {
-        printf("Signature encoding failed: %s\n", PB_GET_ERROR(&stream));
+        printf("Authority encoding failed: %s\n", PB_GET_ERROR(&stream));
         exit(EXIT_FAILURE);
     }
 
@@ -137,27 +137,27 @@ std::vector<uint8_t> pbtx_tester::encode_transaction_body(const uint64_t &networ
     return buffer;
 }
 
-std::tuple<bool, std::vector<uint8_t>> pbtx_tester::encode_transaction(const std::vector<uint8_t> &encoded_trx_body, const pb_size_t &signatures_count, const signature &signatures)
+std::tuple<bool, std::vector<uint8_t>> pbtx_tester::encode_transaction(const std::vector<uint8_t> &encoded_trx_body, const pb_size_t &authorities_count, const signature &authorities)
 {
     _pbtx_Transaction transaction = pbtx_Transaction_init_default;
 
     transaction.body.size = encoded_trx_body.size();
     memcpy(transaction.body.bytes, &encoded_trx_body[0], encoded_trx_body.size());
-    transaction.signatures_count = signatures_count;
+    transaction.authorities_count = authorities_count;
 
     auto i = 0;
-    for (const auto &signature : signatures)
+    for (const auto &signature : authorities)
     {
-        auto [sig, type, sig_bytes_count] = signature[i];
-        transaction.signatures[i].type = type;
-        transaction.signatures[i].sig_bytes_count = signature.size();
+        auto [sig, type, sigs_count] = signature[i];
+        transaction.authorities[i].type = type;
+        transaction.authorities[i].sigs_count = signature.size();
 
         auto j = 0;
         for (const auto &ecc_sig : signature)
         {
             auto bytes = std::get<0>(ecc_sig);
-            transaction.signatures[i].sig_bytes[j].size = bytes.size();
-            memcpy(transaction.signatures[i].sig_bytes[j].bytes , &bytes[0], bytes.size());
+            transaction.authorities[i].sigs[j].size = bytes.size();
+            memcpy(transaction.authorities[i].sigs[j].bytes , &bytes[0], bytes.size());
             j++;
         }
 
@@ -213,11 +213,11 @@ void pbtx_tester::decode_permisson(const std::vector<uint8_t> &buffer)
 
 void pbtx_tester::decode_signature(const std::vector<uint8_t> &buffer)
 {
-    _pbtx_Signature signature = pbtx_Signature_init_default;
+    _pbtx_Authority signature = pbtx_Authority_init_default;
 
     pb_istream_t stream = pb_istream_from_buffer(buffer.data(), buffer.size());
 
-    auto status = pb_decode(&stream, pbtx_Signature_fields, &signature);
+    auto status = pb_decode(&stream, pbtx_Authority_fields, &signature);
 
     if (!status)
     {
@@ -255,21 +255,21 @@ void pbtx_tester::decode_transaction(const std::vector<uint8_t> &buffer)
         exit(EXIT_FAILURE);
     }
 
-    printf("Signatures count: %u\n", transaction.signatures_count);
+    printf("Authoritys count: %u\n", transaction.authorities_count);
 
-    for (auto i = 0; i < transaction.signatures_count; i++)
+    for (auto i = 0; i < transaction.authorities_count; i++)
     {
-        printf("Signatures type: %u\n", transaction.signatures[i].type);
-        printf("Signatures byte buffers count: %u\n", transaction.signatures[i].sig_bytes_count);
+        printf("Authoritys type: %u\n", transaction.authorities[i].type);
+        printf("Authoritys byte buffers count: %u\n", transaction.authorities[i].sigs_count);
 
-        for(auto j = 0; j < transaction.signatures[i].sig_bytes_count; j++)
+        for(auto j = 0; j < transaction.authorities[i].sigs_count; j++)
         {
-            printf("Signatures byte buffer size: %u\n", transaction.signatures[i].sig_bytes[j].size);
+            printf("Authoritys byte buffer size: %u\n", transaction.authorities[i].sigs[j].size);
 
-            printf("Signatures byte buffer bytes: ");
-            for(auto k = 0; k < transaction.signatures[i].sig_bytes[j].size; k++)
+            printf("Authoritys byte buffer bytes: ");
+            for(auto k = 0; k < transaction.authorities[i].sigs[j].size; k++)
             {
-                printf("%02hhx", transaction.signatures[i].sig_bytes[j].bytes[k]);
+                printf("%02hhx", transaction.authorities[i].sigs[j].bytes[k]);
             }
             printf("\n");
         }

@@ -80,7 +80,7 @@ not less than the threshold.
 Most of simple accounts would define the threshold of 1, and only one
 public key. But others may be protected by a hardware wallet as a
 second factor authentication, or some external escrow service
-releasing the signatures.
+releasing the authorities.
 
 
 ### Co-signors
@@ -93,15 +93,15 @@ co-signors in addition to the actor signature.
 ### Transactions
 
 A PBTX transaction is a protobuf message of Transaction type. It
-consists of body and signatures.
+consists of body and authorities.
 
-The signatures field is a list of Signature messages, each
+The authorities field is a list of Authority messages, each
 representing an actor or a co-signor in the order of their appearance
-in the body. Each Signature message may contain several ECC signatures
+in the body. Each Authority message may contain several ECC authorities
 necessary to satisfy the Permission threshold.
 
 The body is an array of bytes where TransactionBody message is encoded
-in Protobuf format, signed by those signatures.
+in Protobuf format, signed by those authorities.
 
 The body message contains network ID, actor ID, optional cosignors,
 sequence number, previous body's hash, transaction type and content.

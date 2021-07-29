@@ -201,7 +201,7 @@ ACTION pbtx::unregactor(uint64_t network_id, uint64_t actor)
 
 
 
-void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm, const pbtx_Signature& sig)
+void validate_auth(const checksum256& digest, const vector<uint8_t>& pbperm, const pbtx_Authority& sig)
 {
   pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(pbperm.data(), pbperm.size());
@@ -209,13 +209,13 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
 
   uint32_t sum_weights = 0;
 
-  for( uint32_t i=0; i < sig.sig_bytes_count; i++ ) {
+  for( uint32_t i=0; i < sig.sigs_count; i++ ) {
     public_key recovered_key;
     {
-      if( sig.sig_bytes[i].size < 65 ) {
-        check(false, "Signature too short. Expected 65 bytes or more, got " + to_string(sig.sig_bytes[i].size));
+      if( sig.sigs[i].size < 65 ) {
+        check(false, "Authority too short. Expected 65 bytes or more, got " + to_string(sig.sigs[i].size));
       }
-      datastream ds(sig.sig_bytes[i].bytes, sig.sig_bytes[i].size);
+      datastream ds(sig.sigs[i].bytes, sig.sigs[i].size);
       signature eosiosig;
       ds >> eosiosig;
       recovered_key = recover_key(digest, eosiosig );
@@ -239,7 +239,7 @@ void validate_signature(const checksum256& digest, const vector<uint8_t>& pbperm
   }
 
   if( sum_weights < perm->threshold ) {
-    check(false, "Insufficient signatures weight for actor #" + to_string(perm->actor));
+    check(false, "Insufficient weight for actor #" + to_string(perm->actor));
   }
 
   free(perm);
@@ -287,9 +287,9 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
           ", received prev_hash=" + to_string(body->prev_hash));
   }
 
-  if( trx->signatures_count != body->cosignors_count + 1 ) {
-    check(false, "Expected " + to_string(body->cosignors_count + 1) + " signatures, but received " +
-          to_string(trx->signatures_count));
+  if( trx->authorities_count != body->cosignors_count + 1 ) {
+    check(false, "Expected " + to_string(body->cosignors_count + 1) + " authorities, but received " +
+          to_string(trx->authorities_count));
   }
 
   checksum256 digest = sha256((const char*)trx->body.bytes, trx->body.size);
@@ -306,13 +306,13 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
     row.last_modified = current_time_point();
   });
 
-  validate_signature(digest, actpermitr->permission, trx->signatures[0]);
+  validate_auth(digest, actpermitr->permission, trx->authorities[0]);
   for( uint32_t i = 0; i < body->cosignors_count; i++ ) {
     actpermitr = _actorperm.find(body->cosignors[i]);
     if( actpermitr == _actorperm.end() ) {
       check(false, "Unknown cosignor #" + to_string(i) + ": " + to_string(body->cosignors[i]));
     }
-    validate_signature(digest, actpermitr->permission, trx->signatures[i+1]);
+    validate_auth(digest, actpermitr->permission, trx->authorities[i+1]);
   }
 
 

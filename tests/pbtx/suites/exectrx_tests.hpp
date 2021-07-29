@@ -23,8 +23,8 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(666, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, 0, signatures);
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, 0, authorities);
     BOOST_REQUIRE_EQUAL(true, status);
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown network_id: 666"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
@@ -36,8 +36,8 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("carol"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, 0, signatures);
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, 0, authorities);
     BOOST_REQUIRE_EQUAL(true, status);
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown actor: 4733081447982694400"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
@@ -49,8 +49,8 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 0, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, 0, signatures);
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, 0, authorities);
     BOOST_REQUIRE_EQUAL(true, status);
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Expected seqnum=1, received seqnum=0"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
@@ -62,8 +62,8 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 1, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Previous body hash mismatch. Expected 0, received prev_hash=1"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
@@ -75,10 +75,10 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, 0, signatures);
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, 0, authorities);
     BOOST_REQUIRE_EQUAL(true, status);
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Expected 1 signatures, but received 0"),
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Expected 1 authorities, but received 0"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
@@ -89,10 +89,10 @@ try
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 1, {string_to_uint64_t("carol")}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
     auto alice2_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size()),
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size()),
                           std::make_tuple(alice2_sig, pbtx_KeyType_EOSIO_KEY, alice2_sig.size())}};
 
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.data()->size(), signatures);
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.data()->size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
     BOOST_REQUIRE_EQUAL(wasm_assert_msg("Unknown cosignor #0: 0"),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
@@ -105,10 +105,10 @@ try
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
     std::vector<char> empty_sig;
-    signature signatures{{std::make_tuple(empty_sig, pbtx_KeyType_EOSIO_KEY, 1)}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    signature authorities{{std::make_tuple(empty_sig, pbtx_KeyType_EOSIO_KEY, 1)}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature too short. Expected 65 bytes or more, got 0"),
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Authority too short. Expected 65 bytes or more, got 0"),
                     m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
@@ -118,10 +118,10 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(1001, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto carol_sig = to_signature(encoded_trx_body, get_private_key(N(carol), "active"));
-    signature signatures{{std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    signature authorities{{std::make_tuple(carol_sig, pbtx_KeyType_EOSIO_KEY, carol_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Signature #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Authority #0 does not match any keys of actor #" + std::to_string(string_to_uint64_t("alice"))),
                         m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
@@ -131,11 +131,11 @@ try
 {
     auto encoded_trx_body = encode_transaction_body(2001, string_to_uint64_t("msiguser1"), 0, {}, 1, 0, 0, {33});
     auto msiguser1_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser1), "active"));
-    signature signatures{{std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size())}};
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    signature authorities{{std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size())}};
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
 
-    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Insufficient signatures weight for actor #" + std::to_string(string_to_uint64_t("msiguser1"))),
+    BOOST_REQUIRE_EQUAL(wasm_assert_msg("Insufficient authorities weight for actor #" + std::to_string(string_to_uint64_t("msiguser1"))),
                        m_pbtx_api.exectrx(N(bob), N(bob), trx));
 }
 FC_LOG_AND_RETHROW()
@@ -146,9 +146,9 @@ try
     auto encoded_trx_body = encode_transaction_body(999, string_to_uint64_t("alice"), 0, {}, 1, 0, 0, {33});
     auto alice_sig = to_signature(encoded_trx_body, get_private_key(N(alice), "active"));
 
-    signature signatures{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
+    signature authorities{{std::make_tuple(alice_sig, pbtx_KeyType_EOSIO_KEY, alice_sig.size())}};
 
-    auto [status,trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    auto [status,trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
 
     BOOST_REQUIRE_EQUAL(true, status);
 
@@ -179,11 +179,11 @@ try
     auto msiguser2_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser2), "active"));
     auto msiguser3_sig = to_signature(encoded_trx_body, get_private_key(N(msiguser3), "active"));
 
-    signature signatures{{std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size()),
+    signature authorities{{std::make_tuple(msiguser1_sig, pbtx_KeyType_EOSIO_KEY, msiguser1_sig.size()),
                           std::make_tuple(msiguser2_sig, pbtx_KeyType_EOSIO_KEY, msiguser2_sig.size()),
                           std::make_tuple(msiguser3_sig, pbtx_KeyType_EOSIO_KEY, msiguser3_sig.size())}};
 
-    auto [status, trx] = encode_transaction(encoded_trx_body, signatures.size(), signatures);
+    auto [status, trx] = encode_transaction(encoded_trx_body, authorities.size(), authorities);
     BOOST_REQUIRE_EQUAL(true, status);
 
     BOOST_REQUIRE_EQUAL(success(), m_pbtx_api.exectrx(N(bob), N(bob), trx));

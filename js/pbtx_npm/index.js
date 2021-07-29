@@ -190,11 +190,11 @@ class PBTX {
             buffer.push(signature.signature.type);
             buffer.pushArray(signature.signature.data);
 
-            let sig = new pbtx_pb.Signature();
+            let sig = new pbtx_pb.Authority();
             sig.setType(pbtx_pb.KeyType.EOSIO_KEY);
             sig.addSigBytes(buffer.asUint8Array());
 
-            tx.addSignatures(sig);
+            tx.addAuthorities(sig);
         });
 
         return tx;

@@ -35,11 +35,11 @@ message Transaction {
     // protobuf-encoded TransactionBody
     bytes body = 1;
 
-    // array of signatures. Each signature signs a sha256 hash of the
-    // body bytes. The actor's signature should go first, followed by
-    // cosignor signatures in exact order of cosignors field.
+    // array of authorities. Each authority signs a sha256 hash of the
+    // body bytes. The actor's authority should go first, followed by
+    // cosignor authorities in exact order of cosignors field.
     // (maximum 8)
-    repeated Signature signatures = 2;
+    repeated Authority authorities = 2;
 }
 
 
@@ -68,7 +68,7 @@ message PublicKey {
 }
 
 
-message Signature {
+message Authority {
     KeyType type = 1;
-    repeated bytes sig_bytes = 2;
+    repeated bytes sigs = 2;
 }
