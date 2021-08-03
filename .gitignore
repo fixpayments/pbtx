@@ -1,6 +1,5 @@
 .vscode
 build
-nanopb
 
 *.wasm
 *.abi

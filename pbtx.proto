@@ -23,7 +23,7 @@ message TransactionBody {
     fixed64 prev_hash = 5 [jstype = JS_STRING];
 
     // network-specific transaction type. PBTX does not interpret the
-    // typ[e and content, and passes them over for processing
+    // type and content, and passes them over for processing
     uint32 transaction_type = 6;
 
     // transaction content in protobuf format (max length 16384)

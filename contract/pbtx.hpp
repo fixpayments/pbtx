@@ -40,8 +40,9 @@ CONTRACT pbtx : public eosio::contract {
   // delete a network (requires all actors to be deleted first)
   ACTION unregnetwork(uint64_t network_id);
 
-  // add a new actor account to a network, specifying the credentials
-  // in Permission protobuf message
+  // add a new actor account to a network or update the permissions
+  // for an existing account, specifying the credentials in Permission
+  // protobuf message. This requires admin_acc authorization.
   ACTION regactor(uint64_t network_id, vector<uint8_t> permission);
 
   // delete an actor from a network
