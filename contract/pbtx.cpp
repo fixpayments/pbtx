@@ -379,6 +379,21 @@ void pbtx::add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t> 
 }
 
 
+ACTION pbtx::actorexists(uint64_t network_id, uint64_t actor, string actor_role)
+{
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+
+  actorperm _actorperm(_self, network_id);
+  auto actpermitr = _actorperm.find(actor);
+  if( actpermitr == _actorperm.end() ) {
+    check(false, "Unknown " + actor_role);
+  }
+}
+
+
+
 ACTION pbtx::cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows)
 {
   networks _networks(_self, 0);

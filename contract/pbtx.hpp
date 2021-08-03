@@ -60,10 +60,13 @@ CONTRACT pbtx : public eosio::contract {
     vector<uint8_t>    transaction_content;
   };
 
+  // succeeds if the actor is known, fails otherwise
+  ACTION actorexists(uint64_t network_id, uint64_t actor, string actor_role);
+
 
   // cleans the history up to given ID
   ACTION cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows);
-  
+
  private:
 
   // registry of networks and their admins, scope=0
