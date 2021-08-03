@@ -38,6 +38,7 @@ CONTRACT keyval : public eosio::contract {
   }
 
   ACTION pbtxtransact( name               worker,
+                       uint64_t           network_id,
                        uint64_t           actor,
                        uint32_t           seqnum,
                        vector<uint64_t>   cosignors,
@@ -55,7 +56,7 @@ CONTRACT keyval : public eosio::contract {
     pb_istream_t cmd_stream = pb_istream_from_buffer(transaction_content.data(), transaction_content.size());
     check(pb_decode(&cmd_stream, keyval_Command_fields, cmd), cmd_stream.errmsg);
 
-    keyval_table kv(_self, _self.value);
+    keyval_table kv(_self, network_id);
     auto kvitr = kv.find(cmd->key);
     if( kvitr == kv.end() ) {
       switch(cmd->which_cmd)

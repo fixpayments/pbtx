@@ -53,6 +53,7 @@ CONTRACT pbtx : public eosio::contract {
 
   struct pbtxtransact_abi {
     name               worker;
+    uint64_t           network_id;
     uint64_t           actor;
     uint32_t           seqnum;
     vector<uint64_t>   cosignors;
