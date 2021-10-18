@@ -64,6 +64,8 @@ CONTRACT pbtx : public eosio::contract {
   // succeeds if the actor is known, fails otherwise
   ACTION actorexists(uint64_t network_id, uint64_t actor, string actor_role);
 
+  // succeeds if the acotr is unknown
+  ACTION nosuchactor(uint64_t network_id, uint64_t actor, string actor_role);
 
   // cleans the history up to given ID
   ACTION cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows);

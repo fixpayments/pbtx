@@ -378,7 +378,7 @@ void pbtx::add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t> 
   });
 }
 
-
+// validates that the account exists
 ACTION pbtx::actorexists(uint64_t network_id, uint64_t actor, string actor_role)
 {
   networks _networks(_self, 0);
@@ -392,6 +392,20 @@ ACTION pbtx::actorexists(uint64_t network_id, uint64_t actor, string actor_role)
   }
 }
 
+
+// validates that there's no such account
+ACTION pbtx::nosuchactor(uint64_t network_id, uint64_t actor, string actor_role)
+{
+  networks _networks(_self, 0);
+  auto nwitr = _networks.find(network_id);
+  check(nwitr != _networks.end(), "Unknown network");
+
+  actorperm _actorperm(_self, network_id);
+  auto actpermitr = _actorperm.find(actor);
+  if( actpermitr != _actorperm.end() ) {
+    check(false, actor_role + " exists already");
+  }
+}
 
 
 ACTION pbtx::cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrows)
