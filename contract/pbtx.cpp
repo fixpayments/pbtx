@@ -129,6 +129,8 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   pb_istream_t perm_stream = pb_istream_from_buffer(permission.data(), permission.size());
   check(pb_decode(&perm_stream, pbtx_Permission_fields, perm), perm_stream.errmsg);
 
+  check(perm->actor > 0, "Actor ID must be a positive integer");
+
   check(perm->threshold > 0, "Threshold cannot be zero");
   uint64_t weights_sum = 0;
   for( uint32_t i = 0; i < perm->keys_count; i++ ) {
