@@ -127,7 +127,9 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
 
   pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(permission.data(), permission.size());
-  check(pb_decode(&perm_stream, pbtx_Permission_fields, perm), perm_stream.errmsg);
+  if( !pb_decode(&perm_stream, pbtx_Permission_fields, perm) ) {
+    check(false, string("Error in regactor while decoding pbtx_Permission: ") + perm_stream.errmsg);
+  }
 
   check(perm->actor > 0, "Actor ID must be a positive integer");
 
@@ -207,7 +209,9 @@ void validate_auth(const checksum256& digest, const vector<uint8_t>& pbperm, con
 {
   pbtx_Permission* perm = (pbtx_Permission*) malloc(sizeof(pbtx_Permission));
   pb_istream_t perm_stream = pb_istream_from_buffer(pbperm.data(), pbperm.size());
-  check(pb_decode(&perm_stream, pbtx_Permission_fields, perm), perm_stream.errmsg);
+  if( !pb_decode(&perm_stream, pbtx_Permission_fields, perm) ) {
+    check(false, string("Error in validate_auth while decoding pbtx_Permission: ") + perm_stream.errmsg);
+  }
 
   uint32_t sum_weights = 0;
 
@@ -255,12 +259,16 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
 
   pbtx_Transaction* trx = (pbtx_Transaction*) malloc(sizeof(pbtx_Transaction));
   pb_istream_t trx_stream = pb_istream_from_buffer(trx_input.data(), trx_input.size());
-  check(pb_decode(&trx_stream, pbtx_Transaction_fields, trx), trx_stream.errmsg);
+  if( !pb_decode(&trx_stream, pbtx_Transaction_fields, trx) ) {
+    check(false, string("Error in exectrx while decoding pbtx_Transaction: ") +  trx_stream.errmsg);
+  }
   check(trx->body.size > 0, "Empty transaction body");
 
   pbtx_TransactionBody* body = (pbtx_TransactionBody*) malloc(sizeof(pbtx_TransactionBody));
   pb_istream_t body_stream = pb_istream_from_buffer(trx->body.bytes, trx->body.size);
-  check(pb_decode(&body_stream, pbtx_TransactionBody_fields, body), body_stream.errmsg);
+  if( !pb_decode(&body_stream, pbtx_TransactionBody_fields, body) ) {
+    check(false, string("Error in exectrx while decoding pbtx_TransactionBody: ") + body_stream.errmsg);
+  }
 
   uint64_t network_id = body->network_id;
   networks _networks(_self, 0);
