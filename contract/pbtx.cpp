@@ -160,6 +160,7 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
     });
   }
   else {
+    check(actpermitr->permission != permission, "Permission has not changed");
     _actorperm.modify(*actpermitr, admin_acc, [&]( auto& row ) {
       row.permission = permission;
     });
