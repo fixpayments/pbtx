@@ -173,6 +173,50 @@ network. It defines what needs to be delivered in transaction type and
 content, and keeps its own state that is relevant to the application.
 
 
+Encoding standards
+------------------
+
+PBTX uses public keys and signatures in the form of binary byte
+arrays. The binary format is compatible with that of EOSIO, as
+follows:
+
+`PublicKey.key_bytes` is a 33-byte vector as follows:
+
+* 1 byte indicating the type of ECC curve: 0 indicating secp256k1
+  curve, 1 indicating secp256r1 curve.
+
+* 32 bytes of [compressed elliptic curve point](https://tools.ietf.org/id/draft-jivsov-ecc-compact-05.html)
+
+
+`Authority.sigs` is a list of 65-byte signatures. Each signature is a
+byte vector as follows:
+
+* 1 byte indicating the type of ECC curve: 0 indicating secp256k1
+  curve, 1 indicating secp256r1 curve.
+
+* 64 bytes of [canonical ECC
+  signature](https://eosio.stackexchange.com/questions/5983/where-do-i-find-code-for-transaction-signing).
+
+EOSIO client libraries that encode the data in desired format:
+
+1. eosjs library by Block.one: [public
+key](https://github.com/EOSIO/eosjs/blob/40e4e61c02ccb851045890075c7ffcf12d15f499/src/PublicKey.ts#L25),
+[signing](https://github.com/EOSIO/eosjs/blob/40e4e61c02ccb851045890075c7ffcf12d15f499/src/PrivateKey.ts#L61),
+[signature
+encoding](https://github.com/EOSIO/eosjs/blob/40e4e61c02ccb851045890075c7ffcf12d15f499/src/Signature.ts#L26).
+
+2. eosio-core library by Greymass: [public
+key](https://github.com/greymass/eosio-core/blob/204ae73f7c5eeccf688dc2c212fc488e9f10093d/src/crypto/get-public.ts),
+[signing](https://github.com/greymass/eosio-core/blob/204ae73f7c5eeccf688dc2c212fc488e9f10093d/src/crypto/sign.ts)
+
+3. eosio-android-keystore-signature-provider by Block.one: [key
+management and
+siging](https://github.com/EOSIO/eosio-android-keystore-signature-provider/blob/11ee2994486b819b4d484b359b106b1a4f58faff/eosioandroidkeystoresignatureprovider/src/main/java/one/block/eosiojavaandroidkeystoresignatureprovider/EosioAndroidKeyStoreUtility.kt)
+
+
+
+
+
 Nodejs modules
 --------------
 
