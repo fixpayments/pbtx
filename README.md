@@ -180,21 +180,21 @@ PBTX uses public keys and signatures in the form of binary byte
 arrays. The binary format is compatible with that of EOSIO, as
 follows:
 
-`PublicKey.key_bytes` is a 33-byte vector as follows:
+`PublicKey.key_bytes` is a 34-byte vector as follows:
 
 * 1 byte indicating the type of ECC curve: 0 indicating secp256k1
   curve, 1 indicating secp256r1 curve.
 
-* 32 bytes of [compressed elliptic curve point](https://tools.ietf.org/id/draft-jivsov-ecc-compact-05.html)
+* 33 bytes of [compressed elliptic curve point](https://tools.ietf.org/id/draft-jivsov-ecc-compact-05.html)
 
 
-`Authority.sigs` is a list of 65-byte signatures. Each signature is a
+`Authority.sigs` is a list of 66-byte signatures. Each signature is a
 byte vector as follows:
 
 * 1 byte indicating the type of ECC curve: 0 indicating secp256k1
   curve, 1 indicating secp256r1 curve.
 
-* 64 bytes of [canonical ECC
+* 65 bytes of [canonical ECC
   signature](https://eosio.stackexchange.com/questions/5983/where-do-i-find-code-for-transaction-signing).
 
 EOSIO client libraries that encode the data in desired format:

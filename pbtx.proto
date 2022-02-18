@@ -62,12 +62,17 @@ message KeyWeight {
     uint32 weight = 2;
 }
 
+// for EOSIO_KEY key type, the key_bytes contains a binary
+// representation of a public key in EOSIO compatible format.
 message PublicKey {
     KeyType type = 1;
     bytes key_bytes = 2;
 }
 
-
+// Authority object contains signatures using one or more keys
+// specified in Permission object. A valid Authority object should
+// have the sum of matched key weights equal or higher to
+// Permission.threshold value.
 message Authority {
     KeyType type = 1;
     repeated bytes sigs = 2;
