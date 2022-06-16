@@ -26,6 +26,7 @@
 ACTION pbtx::regnetwork(uint64_t network_id, name admin_acc, vector<name> listeners, uint32_t flags)
 {
   require_auth(admin_acc);
+  check_int63(network_id, "Network ID");
 
   check(((flags & PBTX_FLAGS_PBTX_RESERVED) & ~PBTX_FLAGS_PBTX_KNOWN) == 0,
         "Unrecognized bits set in lower 16 bits of flags");
@@ -132,6 +133,7 @@ ACTION pbtx::regactor(uint64_t network_id, vector<uint8_t> permission)
   }
 
   check(perm->actor > 0, "Actor ID must be a positive integer");
+  check_int63(perm->actor, "Actor ID");
 
   check(perm->threshold > 0, "Threshold cannot be zero");
   uint64_t weights_sum = 0;

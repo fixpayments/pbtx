@@ -5,7 +5,7 @@ tTcleos system newaccount --buy-ram-kbytes 1400  --stake-net "1 TLOS" --stake-cp
 
 tTcleos set account permission pbtxtest1112 active --add-code
 
-tTcleos set contract pbtxtest1112 build/Release/contract/ pbtx.wasm pbtx.abi
+tTcleos set contract pbtxtest1112 contract/ pbtx.wasm pbtx.abi
 
 git clone https://github.com/fixpayments/pbtx_npm.git ~/build/fix/pbtx_npm
 cd ~/build/fix/pbtx_npm
@@ -46,7 +46,9 @@ pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 showperm
 
 
 
-#### try big 64-bit numbers
+#### Big integers
+
+## 63-bit numbers
 
 tTcleos push action pbtxtest1112 regnetwork '["9223372036854775798", "pbtxadmin111", [], 0'] -p pbtxadmin111
 
@@ -55,7 +57,13 @@ pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 setperm 
 
 pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 showperm 9223372036854775798 9223372036854775777
 
+# 64-bit numbers
 
+tTcleos push action pbtxtest1112 regnetwork '["9323372036854775777", "pbtxadmin111", [], 0'] -p pbtxadmin111
+# error: Network ID must be a 63-bit integer
+
+pbtxutil --url=https://testnet.persiantelos.com --contract=pbtxtest1112 setperm --admin=pbtxadmin111 "9223372036854775798" '{"actor":"9323372036854775777", "threshold":1, "keys":[{"key":"EOS8BQxBvwMM3FVjCRubvCxDcxu2hBq6AZoKKH6FE7vp7ZPvVNzZw", "weight":1}]}'
+# error: Actor ID must be a 63-bit integer
 
 
 ##### dummy transaction

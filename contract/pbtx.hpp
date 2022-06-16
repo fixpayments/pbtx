@@ -136,4 +136,12 @@ CONTRACT pbtx : public eosio::contract {
   typedef eosio::multi_index<name("history"), history_row> history;
 
   void add_history(uint64_t network_id, uint8_t event_type, vector<uint8_t>  data, name rampayer);
+
+  // check that the upper bit is zero and we fit into 63-bit integer
+  inline static void check_int63(uint64_t value, string description)
+  {
+    if( value & 0x8000000000000000 ) {
+      check(false, description + " must be a 63-bit integer");
+    }
+  }
 };

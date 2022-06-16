@@ -44,7 +44,8 @@ Protobuf definition
 
 [pbtx.proto](pbtx.proto) defines the protocol data structures.
 
-
+All 64-bit integers should have the highest bit cleared, so that they
+fit into signed positive int64.
 
 Protocol components
 -------------------
