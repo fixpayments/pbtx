@@ -286,20 +286,6 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
     check(false, "Unknown actor: " + to_string(body->actor));
   }
 
-  actorseq _actorseq(_self, network_id);
-  auto actseqitr = _actorseq.find(body->actor);
-  check(actseqitr != _actorseq.end(), "Exception 2");
-
-  if( body->seqnum != actseqitr->seqnum + 1 ) {
-    check(false, "Expected seqnum=" + to_string(actseqitr->seqnum + 1) +
-          ", received seqnum=" + to_string(body->seqnum));
-  }
-
-  if( body->prev_hash != actseqitr->prev_hash ) {
-    check(false, "Previous body hash mismatch. Expected " + to_string(actseqitr->prev_hash) +
-          ", received prev_hash=" + to_string(body->prev_hash));
-  }
-
   if( trx->authorities_count != body->cosignors_count + 1 ) {
     check(false, "Expected " + to_string(body->cosignors_count + 1) + " authorities, but received " +
           to_string(trx->authorities_count));
@@ -307,17 +293,33 @@ ACTION pbtx::exectrx(name worker, vector<uint8_t> trx_input)
 
   checksum256 digest = sha256((const char*)trx->body.bytes, trx->body.size);
 
-  uint64_t body_hash = 0;
-  auto digest_array = digest.extract_as_byte_array();
-  for( uint32_t i = 0; i < 8; i++ ) {
-    body_hash = (body_hash << 8) | digest_array[i];
-  }
+  if( (nwitr->flags & PBTX_FLAG_SKIP_SEQ_AND_PREVHASH) == 0 ) {
+    actorseq _actorseq(_self, network_id);
+    auto actseqitr = _actorseq.find(body->actor);
+    check(actseqitr != _actorseq.end(), "Exception 2");
 
-  _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
-    row.seqnum++;
-    row.prev_hash = body_hash;
-    row.last_modified = current_time_point();
-  });
+    if( body->seqnum != actseqitr->seqnum + 1 ) {
+      check(false, "Expected seqnum=" + to_string(actseqitr->seqnum + 1) +
+            ", received seqnum=" + to_string(body->seqnum));
+    }
+
+    if( body->prev_hash != actseqitr->prev_hash ) {
+      check(false, "Previous body hash mismatch. Expected " + to_string(actseqitr->prev_hash) +
+            ", received prev_hash=" + to_string(body->prev_hash));
+    }
+
+    uint64_t body_hash = 0;
+    auto digest_array = digest.extract_as_byte_array();
+    for( uint32_t i = 0; i < 8; i++ ) {
+      body_hash = (body_hash << 8) | digest_array[i];
+    }
+
+    _actorseq.modify(*actseqitr, same_payer, [&]( auto& row ) {
+      row.seqnum++;
+      row.prev_hash = body_hash;
+      row.last_modified = current_time_point();
+    });
+  }
 
   validate_auth(digest, actpermitr->permission, trx->authorities[0]);
   for( uint32_t i = 0; i < body->cosignors_count; i++ ) {

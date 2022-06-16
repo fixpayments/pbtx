@@ -64,9 +64,32 @@ also providing the RAM resource for contract tables.
 Anyone can register a new network ID on the PBTX contract and become
 its administrator.
 
+[pbtx_contract_constants.hpp](contract/pbtx_contract_constants.hpp)
+defines several flags that could be assigned to networks:
+
+* `PBTX_FLAG_RAW_NOTIFY (0x01)`: notifications to the worker contract
+  are sent via `require_recipient()` instead of calling the worker's
+  `pbtxtransact` action. This way, the worker has access to additional
+  fields in the original transaction, such as ECC signatures.
+
+* `PBTX_FLAG_HISTORY (0x02)`: copies of transactions are stored in the
+  history table (workers pays for RAM).
+
+* `PBTX_FLAG_SKIP_SEQ_AND_PREVHASH (0x04)`: `seqnum` and `prev_hash`
+  fields are ignored in the transactions. Also the contract does not
+  keep track of the previous transactions' sequence number and
+  hash. The listener contract receives `seqnum` from the input PBTX
+  transaction, so it may perocess it if needed.
+
+The upper 16 bits of the 32-bit network flags field are reserved for
+application-specific flags, and it's up to the listener contract to
+interpret them, if needed.
+
+
 ### Actors
 
-The concept of an actor is similar to that of an EOSIO account, but it is not associated with any EOSIO structures.
+The concept of an actor is similar to that of an EOSIO account, but it
+is not associated with any EOSIO structures.
 
 Each actor is identified by a 64-bit integer, and is associated with
 one or multiple ECC public keys that are authorized to sign
@@ -290,4 +313,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 implied.  See the License for the specific language governing
 permissions and limitations under the License.
-

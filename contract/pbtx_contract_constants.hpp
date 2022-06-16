@@ -20,10 +20,12 @@
   free to use by listener contracts for their internal needs. Lower 16
   bits are reserved for PBTX own use.
 */
-const uint32_t PBTX_FLAGS_PBTX_RESERVED = 0x0000FFFF;
-const uint32_t PBTX_FLAGS_PBTX_KNOWN    = 0x00000003;
-const uint32_t PBTX_FLAG_RAW_NOTIFY     = 1<<0;        // if set, require_recipient is used in notifications
-const uint32_t PBTX_FLAG_HISTORY        = 1<<1;        // if set, history log is written on all events
+const uint32_t PBTX_FLAGS_PBTX_RESERVED              = 0x0000FFFF;
+const uint32_t PBTX_FLAGS_PBTX_KNOWN                 = 0x00000007;
+
+const uint32_t PBTX_FLAG_RAW_NOTIFY                  = 1<<0; // if set, require_recipient is used in notifications
+const uint32_t PBTX_FLAG_HISTORY                     = 1<<1; // if set, history log is written on all events
+const uint32_t PBTX_FLAG_SKIP_SEQ_AND_PREVHASH       = 1<<2; // if set, seqnum and prev_hash are not validated by the contract
 
 
 /*
