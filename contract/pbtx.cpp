@@ -430,11 +430,12 @@ ACTION pbtx::cleanhistory(uint64_t network_id, uint64_t upto_id, uint32_t maxrow
   check(nwitr != _networks.end(), "Unknown network");
   require_auth(nwitr->admin_acc);
 
+  time_point upto_time = current_time_point() - HISTORY_MIN_KEEP_INTERVAL;
   bool done_something = false;
 
   history _history(_self, network_id);
   auto histitr = _history.begin();
-  while( histitr != _history.end() && histitr->id <= upto_id && --maxrows >= 0 ) {
+  while( histitr != _history.end() && histitr->id <= upto_id && histitr->trx_time <= upto_time && --maxrows >= 0 ) {
     histitr = _history.erase(histitr);
     done_something = true;
   }

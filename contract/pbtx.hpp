@@ -22,6 +22,8 @@
 using namespace eosio;
 using namespace std;
 
+// do not erase history that is fresher than 10 minutes
+const microseconds HISTORY_MIN_KEEP_INTERVAL(10*60*1000000);
 
 
 CONTRACT pbtx : public eosio::contract {
