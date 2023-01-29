@@ -7,7 +7,7 @@ package pbtx;
 
 message TransactionBody {
     // network identity
-    fixed64 network_id = 1;
+    fixed64 network_id = 1 [jstype = JS_STRING];
 
     // actor account ID
     fixed64 actor = 2 [jstype = JS_STRING];
