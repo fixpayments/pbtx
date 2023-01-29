@@ -4,7 +4,7 @@ project(smart-contract VERSION 2.0.0)
 
 include(ExternalProject)
 
-find_package(eosio.cdt)
+find_package(cdt)
 
 set(DEBUG FALSE CACHE BOOL "Preparing build contract")
 
@@ -12,7 +12,7 @@ ExternalProject_Add(
    contract
    SOURCE_DIR ${CMAKE_SOURCE_DIR}/contract
    BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/contract
-   CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake
+   CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${CDT_ROOT}/lib/cmake/cdt/CDTWasmToolchain.cmake
    UPDATE_COMMAND ""
    PATCH_COMMAND ""
    TEST_COMMAND ""
@@ -29,7 +29,7 @@ if(BUILD_EXAMPLES)
       listener_keyval
       SOURCE_DIR ${CMAKE_SOURCE_DIR}/examples/listener_keyval
       BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/listener_keyval
-      CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake
+      CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${CDT_ROOT}/lib/cmake/cdt/CDTWasmToolchain.cmake
       UPDATE_COMMAND ""
       PATCH_COMMAND ""
       TEST_COMMAND ""

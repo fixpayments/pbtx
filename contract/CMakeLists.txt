@@ -5,7 +5,7 @@ project(pbtx)
 set(EOSIO_WASM_OLD_BEHAVIOR "Off")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../nanopb/extra)
 
-find_package(eosio.cdt)
+find_package(cdt)
 find_package(Nanopb REQUIRED)
 
 include_directories(${NANOPB_INCLUDE_DIRS})
